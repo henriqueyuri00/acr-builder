@@ -308,17 +308,30 @@ document.getElementById("theme").addEventListener("click",()=>{
   const dark=cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
   document.documentElement.setAttribute("data-theme", dark?"light":"dark");
 });
-// Checkout URL is injected at deploy time once the merchant account exists.
-// Fails loudly rather than silently sending buyers to a dead link.
-document.querySelectorAll("[data-checkout]").forEach(a=>{
+/* Checkout URL is injected at deploy time once the merchant account is live.
+   Until then the buy control degrades to an honest, accessible disabled state
+   rather than a dead link or a modal dialog — a dialog would also block the
+   page for assistive tech users, which would be a poor look on this of all
+   sites. The free builder stays fully available either way. */
+document.querySelectorAll("[data-checkout]").forEach(a => {
   const url = window.CHECKOUT_URL || "";
-  if(url){ a.href = url; }
-  else{
-    a.addEventListener("click", e=>{
-      e.preventDefault();
-      alert("Checkout is not connected yet. This page is not live for sale.");
-    });
-  }
+  if (url) { a.href = url; return; }
+
+  a.removeAttribute("href");                 // no href => not a link, not focusable as one
+  a.setAttribute("role", "button");
+  a.setAttribute("aria-disabled", "true");
+  a.setAttribute("tabindex", "-1");
+  a.style.opacity = ".55";
+  a.style.cursor = "not-allowed";
+  a.textContent = "Checkout opening shortly";
+
+  const note = document.createElement("p");
+  note.className = "fineprint";
+  note.setAttribute("role", "status");
+  note.textContent = "The kit is finished but payment isn't connected yet, so it can't be " +
+    "bought today. The free ACR Builder above is complete and MIT licensed — use it now, " +
+    "no strings.";
+  a.parentNode.insertAdjacentElement("afterend", note);
 });
 </script>
 </body>

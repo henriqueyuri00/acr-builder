@@ -15,7 +15,7 @@ This walks you through all **50 WCAG 2.1 Level A and AA success criteria** — t
 referenced by **EN 301 549 Chapter 9**, the harmonised standard behind the European
 Accessibility Act — and exports a clean report as HTML or Markdown.
 
-**[→ Open the builder](https://example.com/free/)** · or download
+**[→ Open the builder](https://henriqueyuri00.github.io/acr-builder/)** · or download
 [`acr-builder.html`](dist/acr-builder.html) and open it from your filesystem.
 
 ## Why another one

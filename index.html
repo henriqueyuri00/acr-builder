@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACR Builder — write an honest accessibility conformance report</title>
+<meta name="description" content="A free, offline, client-side tool for writing an Accessibility Conformance Report against WCAG 2.1 AA / EN 301 549. Your data never leaves the browser.">
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#fff; --ink:#16171a; --muted:#5f6470; --line:#e4e4e2;
+  --accent:#1c5d3f; --accent-soft:#e8f1ec; --on-accent:#fff;
+  --warn:#8a5300; --warn-soft:#fdf3e2; --danger:#9b2226; --danger-soft:#fdeeee;
+  --ok:#1c5d3f; --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]){
+    --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+    --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+    --warn:#e0b168; --warn-soft:#2e2413; --danger:#e88b8e; --danger-soft:#31191a;
+    --ok:#6cc49a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme=dark]{
+  --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+  --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+  --warn:#e0b168; --warn-soft:#2e2413; --danger:#e88b8e; --danger-soft:#31191a;
+  --ok:#6cc49a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.25;letter-spacing:-.015em;margin:0}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0}
+.brand{font-weight:640;font-size:17px;letter-spacing:-.02em}
+.brand span{color:var(--muted);font-weight:400}
+.ghost{background:none;border:1px solid var(--line);color:var(--muted);
+  padding:6px 12px;border-radius:8px;font-size:13px}
+.ghost:hover{color:var(--ink);border-color:var(--muted)}
+
+.hero{padding:44px 0 30px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(28px,4.4vw,40px);max-width:22ch}
+.hero p{color:var(--muted);max-width:64ch;margin:16px 0 0;font-size:17px}
+.privacy{display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:7px 13px;
+  background:var(--accent-soft);color:var(--accent);border-radius:999px;font-size:13px;font-weight:520}
+
+/* progress */
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);
+  padding:11px 0;backdrop-filter:blur(8px)}
+.barin{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.track{flex:1;min-width:160px;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.fill{height:100%;background:var(--accent);width:0;transition:width .25s ease}
+.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+section{padding:34px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
+.card h2{font-size:19px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+label.f{display:block;font-size:13px;font-weight:560;margin-bottom:6px;color:var(--muted)}
+input[type=text],textarea,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--ink);font:inherit;font-size:14px}
+textarea{resize:vertical;min-height:64px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+
+.principle{margin-top:30px}
+.principle > h3{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:14px}
+
+/* Skip link: visible on focus, never display:none (2.4.1). */
+.skip{position:absolute;left:12px;top:-60px;z-index:60;background:var(--accent);color:var(--on-accent);
+  padding:10px 16px;border-radius:0 0 8px 8px;font-weight:580;text-decoration:none;transition:top .15s}
+.skip:focus{top:0}
+
+.crit{background:var(--panel);border:1px solid var(--line);border-radius:11px;margin-bottom:11px;overflow:hidden}
+.crit.done{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.crit > summary{list-style:none;cursor:pointer;padding:14px 17px;display:flex;align-items:center;gap:12px}
+.crit > summary::-webkit-details-marker{display:none}
+.crit > summary:hover{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.cid{font:600 12px/1 var(--mono);color:var(--muted);min-width:42px}
+.cname{font-weight:540;font-size:15px;flex:1}
+.lvl{font:600 10px/1 var(--mono);padding:4px 6px;border-radius:4px;background:var(--line);color:var(--muted);letter-spacing:.04em}
+.pill{font-size:11px;font-weight:620;padding:4px 9px;border-radius:99px;white-space:nowrap}
+.p-sup{background:var(--accent-soft);color:var(--accent)}
+.p-par{background:var(--warn-soft);color:var(--warn)}
+.p-not{background:var(--danger-soft);color:var(--danger)}
+.p-na{background:var(--line);color:var(--muted)}
+.p-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+
+.body{padding:4px 17px 18px;border-top:1px solid var(--line)}
+.q{margin:14px 0 0}
+.q dt{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:640;margin-bottom:3px}
+.q dd{margin:0 0 12px;font-size:14.5px}
+.q dd.fail{color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 12px}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:7px 13px;border-radius:8px;font-size:13px;font-weight:520}
+.opt:hover{border-color:var(--muted);color:var(--ink)}
+.opt[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+.flag{display:flex;gap:9px;padding:11px 13px;border-radius:8px;font-size:13.5px;margin-top:11px;line-height:1.5}
+.flag.warn{background:var(--warn-soft);color:var(--warn)}
+.flag.err{background:var(--danger-soft);color:var(--danger)}
+.flag b{font-weight:640}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+/* Text-on-accent is a token, never an override. Overriding .btn colour per theme
+   outranked .btn.sec on specificity and painted dark-on-dark in dark mode. */
+.btn{background:var(--accent);color:var(--on-accent);border:none;padding:11px 19px;border-radius:9px;font-weight:580;font-size:14.5px}
+.btn:hover{filter:brightness(1.08)}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sec:hover{border-color:var(--muted);filter:none}
+
+.tally{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0}
+.t{padding:13px;border:1px solid var(--line);border-radius:9px;text-align:center}
+.t b{display:block;font-size:24px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.t span{font-size:12px;color:var(--muted)}
+
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 44px;color:var(--muted);font-size:13.5px}
+footer p{max-width:70ch}
+.legal{font-size:12.5px;opacity:.85;margin-top:14px}
+@media print{.bar,header,.hero,.actions,footer{display:none}}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap head">
+    <div class="brand">ACR Builder <span>· WCAG 2.1 AA / EN 301 549</span></div>
+    <button class="ghost" id="theme" type="button">Theme</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Write an accessibility conformance report you can actually defend.</h1>
+    <p>A customer's procurement team asked for your accessibility documentation. The official template is
+       free but blank, and a consultancy wants $1,850&ndash;$3,100 to fill it in. This walks you through all
+       50 WCAG&nbsp;2.1 Level&nbsp;A and AA success criteria and exports a clean report.</p>
+    <div class="privacy">&#9679; Runs entirely in your browser. No account, no upload, no analytics.</div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap barin">
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="count" id="count">0 of 50 assessed</div>
+    <button class="ghost" id="jump" type="button">Next unanswered</button>
+  </div>
+</div>
+
+<main class="wrap" id="main">
+
+  <section>
+    <div class="card">
+      <h2>1. What you're reporting on</h2>
+      <p class="sub">This header appears at the top of the exported report. Reviewers check it first.</p>
+      <div class="grid">
+        <div><label class="f" for="m-name">Product name</label><input type="text" id="m-name" data-meta="name" placeholder="Acme Analytics"></div>
+        <div><label class="f" for="m-ver">Version</label><input type="text" id="m-ver" data-meta="version" placeholder="2026.8"></div>
+        <div><label class="f" for="m-date">Report date</label><input type="text" id="m-date" data-meta="date" placeholder="2026-08-09"></div>
+        <div><label class="f" for="m-contact">Contact for accessibility</label><input type="text" id="m-contact" data-meta="contact" placeholder="a11y@acme.com"></div>
+      </div>
+      <div style="margin-top:14px">
+        <label class="f" for="m-scope">Scope &mdash; exactly what was evaluated</label>
+        <textarea id="m-scope" data-meta="scope" placeholder="Web application at app.acme.com: authentication, dashboard, report builder, billing. Excludes the legacy admin console at admin.acme.com."></textarea>
+      </div>
+      <div style="margin-top:14px">
+        <label class="f" for="m-method">Evaluation methods used</label>
+        <textarea id="m-method" data-meta="method" placeholder="Automated: axe-core 4.x across 40 routes. Manual: keyboard-only traversal of all primary flows. Assistive tech: NVDA 2025.1 + Firefox, VoiceOver + Safari 18. Zoom: 200% and 400% reflow at 320px."></textarea>
+      </div>
+      <div class="flag warn" style="margin-top:16px">
+        <span>&#9888;</span>
+        <div><b>A report with no stated method is not evidence.</b> Reviewers discount conformance claims that
+        don't say how they were tested. "We ran Lighthouse" covers roughly a third of these criteria &mdash;
+        the rest require a human.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="criteria"></section>
+
+  <section>
+    <div class="card">
+      <h2>3. Review and export</h2>
+      <p class="sub">Check the shape of your report before you send it to anyone.</p>
+      <div class="tally" id="tally"></div>
+      <div id="audit"></div>
+      <div class="actions">
+        <button class="btn" id="ex-html" type="button">Export report (HTML)</button>
+        <button class="btn sec" id="ex-md" type="button">Export as Markdown</button>
+        <button class="btn sec" id="ex-json" type="button">Save working file (JSON)</button>
+        <button class="btn sec" id="im-json" type="button">Load working file</button>
+        <button class="btn sec" id="reset" type="button">Clear all</button>
+      </div>
+      <input type="file" id="file" accept="application/json" aria-label="Choose an ACR Builder working file to load" hidden>
+    </div>
+  </section>
+</main>
+
+<div class="wrap">
+  <footer>
+    <p><b>Why this exists.</b> The conformance levels here &mdash; Supports, Partially Supports, Does Not
+    Support, Not Applicable &mdash; are the same vocabulary procurement reviewers expect. What this tool
+    refuses to do is let you produce a clean-looking report you can't back up. An honest "Partially Supports"
+    with a dated remediation date wins more deals than a suspicious wall of "Supports".</p>
+    <p style="margin-top:12px"><b>This is not an accessibility overlay.</b> Overlay widgets that promise
+    instant compliance do not produce conformance, and buyers' accessibility teams increasingly treat them
+    as a negative signal. There is no way to do this without testing your product.</p>
+    <p class="legal">VPAT&reg; is a registered service mark of the Information Technology Industry Council
+    (ITI). This tool is not affiliated with or endorsed by ITI, and does not reproduce or modify their
+    template &mdash; it produces an Accessibility Conformance Report from the underlying WCAG&nbsp;2.1
+    success criteria. Not legal advice. MIT licensed.</p>
+  </footer>
+</div>
+
+<script src="criteria.js"></script>
+<script>
+(function(){
+"use strict";
+const KEY="acr-builder-v1";
+const LEVELS=[
+  {k:"supports", label:"Supports",           cls:"p-sup", desc:"Meets the criterion without known defects."},
+  {k:"partial",  label:"Partially Supports", cls:"p-par", desc:"Some functionality does not meet it."},
+  {k:"none",     label:"Does Not Support",   cls:"p-not", desc:"The majority does not meet it."},
+  {k:"na",       label:"Not Applicable",     cls:"p-na",  desc:"The criterion has no bearing on this product."}
+];
+let state = load();
+
+function load(){
+  try{ const r=JSON.parse(localStorage.getItem(KEY)); if(r&&r.answers) return r; }catch(e){}
+  return {meta:{}, answers:{}};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function ans(id){ return state.answers[id] || {}; }
+
+/* ---------- render criteria ---------- */
+const host=document.getElementById("criteria");
+const ORDER=["Perceivable","Operable","Understandable","Robust"];
+let html='<div class="card"><h2>2. Assess each criterion</h2><p class="sub">Fifty rows. You cannot skip '+
+         'them &mdash; an incomplete report is what gets sent back with questions.</p></div>';
+ORDER.forEach(p=>{
+  html+='<div class="principle"><h3>'+p+'</h3>';
+  CRITERIA.filter(c=>c.principle===p).forEach(c=>{
+    html+=renderCrit(c);
+  });
+  html+='</div>';
+});
+host.innerHTML=html;
+
+function renderCrit(c){
+  const a=ans(c.id);
+  const lv=LEVELS.find(l=>l.k===a.level);
+  return '<details class="crit'+(a.level?" done":"")+'" id="c-'+c.id+'" data-id="'+c.id+'">'+
+    '<summary>'+
+      '<span class="cid">'+c.id+'</span>'+
+      '<span class="cname">'+esc(c.name)+'</span>'+
+      '<span class="lvl">'+c.level+'</span>'+
+      '<span class="pill '+(lv?lv.cls:"p-none")+'">'+(lv?lv.label:"Not assessed")+'</span>'+
+    '</summary>'+
+    '<div class="body">'+
+      '<dl class="q">'+
+        '<dt>What it means</dt><dd>'+esc(c.what)+'</dd>'+
+        '<dt>What the reviewer is checking</dt><dd>'+esc(c.ask)+'</dd>'+
+        '<dt>How this usually breaks</dt><dd class="fail">'+esc(c.fail)+'</dd>'+
+      '</dl>'+
+      '<div class="opts" role="group" aria-label="Conformance level for '+c.id+'">'+
+        LEVELS.map(l=>'<button type="button" class="opt" data-set="'+l.k+'" title="'+esc(l.desc)+'" '+
+          'aria-pressed="'+(a.level===l.k)+'">'+l.label+'</button>').join("")+
+      '</div>'+
+      '<label class="f" for="r-'+c.id+'">Remarks and explanations</label>'+
+      '<textarea id="r-'+c.id+'" data-remark="'+c.id+'" placeholder="'+esc(remarkHint(c))+'">'+esc(a.remark||"")+'</textarea>'+
+      '<div data-flag="'+c.id+'">'+flagFor(c,a)+'</div>'+
+    '</div></details>';
+}
+
+function remarkHint(c){
+  return c.na
+    ? 'If Not Applicable, state why. Legitimately N/A when: '+c.na
+    : 'Name the components tested and any known defects, with a target date for anything unresolved.';
+}
+
+/* honesty guardrails, per row */
+function flagFor(c,a){
+  if(!a.level) return "";
+  const hasRemark=(a.remark||"").trim().length>=12;
+  if((a.level==="partial"||a.level==="none") && !hasRemark)
+    return '<div class="flag err"><span>&#9679;</span><div><b>A remark is required here.</b> '+
+      '"Partially Supports" and "Does Not Support" are only credible when they name the specific defect. '+
+      'Reviewers read this column far more carefully than the level itself.</div></div>';
+  if(a.level==="na" && !c.na)
+    return '<div class="flag err"><span>&#9679;</span><div><b>This criterion is almost never Not Applicable '+
+      'for a web product.</b> N/A means the criterion cannot apply &mdash; not that you haven\'t built the '+
+      'feature well. If you\'re unsure, "Does Not Support" is the safer and more honest answer.</div></div>';
+  if(a.level==="na" && c.na && !hasRemark)
+    return '<div class="flag warn"><span>&#9888;</span><div><b>Justify the N/A.</b> Legitimately N/A when: '+
+      esc(c.na)+'</div></div>';
+  return "";
+}
+
+/* ---------- events ---------- */
+host.addEventListener("click",e=>{
+  const b=e.target.closest("[data-set]"); if(!b) return;
+  const d=b.closest(".crit"), id=d.dataset.id;
+  const a=state.answers[id]||(state.answers[id]={});
+  a.level = (a.level===b.dataset.set) ? undefined : b.dataset.set;
+  if(!a.level) delete a.level;
+  d.querySelectorAll("[data-set]").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.set===a.level)));
+  const c=CRITERIA.find(x=>x.id===id), lv=LEVELS.find(l=>l.k===a.level);
+  const pill=d.querySelector(".pill");
+  pill.className="pill "+(lv?lv.cls:"p-none"); pill.textContent=lv?lv.label:"Not assessed";
+  d.classList.toggle("done", !!a.level);
+  d.querySelector("[data-flag]").innerHTML=flagFor(c,a);
+  save(); refresh();
+});
+host.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.dataset.remark){
+    const id=t.dataset.remark;
+    const a=state.answers[id]||(state.answers[id]={});
+    a.remark=t.value;
+    const c=CRITERIA.find(x=>x.id===id);
+    t.closest(".body").querySelector("[data-flag]").innerHTML=flagFor(c,a);
+    save(); refresh();
+  }
+});
+document.querySelectorAll("[data-meta]").forEach(el=>{
+  el.value = state.meta[el.dataset.meta]||"";
+  el.addEventListener("input",()=>{ state.meta[el.dataset.meta]=el.value; save(); });
+});
+
+/* ---------- progress + summary ---------- */
+function counts(){
+  const c={supports:0,partial:0,none:0,na:0,unanswered:0};
+  CRITERIA.forEach(x=>{ const l=ans(x.id).level; if(l) c[l]++; else c.unanswered++; });
+  return c;
+}
+function refresh(){
+  const c=counts(), done=50-c.unanswered;
+  document.getElementById("fill").style.width=(done/50*100)+"%";
+  document.getElementById("count").textContent=done+" of 50 assessed";
+  document.getElementById("tally").innerHTML=
+    [["Supports",c.supports],["Partially",c.partial],["Does Not",c.none],["N/A",c.na],["Left",c.unanswered]]
+    .map(([k,v])=>'<div class="t"><b>'+v+'</b><span>'+k+'</span></div>').join("");
+
+  const f=[];
+  if(c.unanswered)
+    f.push(["warn",c.unanswered+" criteria are still unassessed. A partial report tells a reviewer you didn't finish."]);
+  if(c.supports===50)
+    f.push(["err","Every one of the 50 criteria is marked Supports. Full conformance across an entire product is rare enough that experienced reviewers treat an all-Supports report as a sign the testing wasn't real. If it is genuinely true, your evaluation-methods section needs to prove it."]);
+  const naMissing=CRITERIA.filter(x=>ans(x.id).level==="na" && !x.na);
+  if(naMissing.length)
+    f.push(["err",naMissing.length+" criteri"+(naMissing.length>1?"a are":"on is")+" marked Not Applicable that essentially always applies to a web product: "+naMissing.map(x=>x.id).join(", ")+"."]);
+  const noRemark=CRITERIA.filter(x=>{const a=ans(x.id); return (a.level==="partial"||a.level==="none") && (a.remark||"").trim().length<12;});
+  if(noRemark.length)
+    f.push(["err",noRemark.length+" non-conforming criteri"+(noRemark.length>1?"a have":"on has")+" no remark explaining the defect: "+noRemark.map(x=>x.id).join(", ")+"."]);
+  if(!(state.meta.method||"").trim())
+    f.push(["warn","No evaluation methods recorded. This is the first thing a procurement reviewer reads."]);
+  if(!f.length && !c.unanswered)
+    f.push(["ok","Report is complete and internally consistent. Every non-conforming criterion is explained."]);
+
+  document.getElementById("audit").innerHTML=f.map(([k,t])=>
+    k==="ok" ? '<div class="flag" style="background:var(--accent-soft);color:var(--accent)"><span>&#10003;</span><div>'+esc(t)+'</div></div>'
+             : '<div class="flag '+(k==="err"?"err":"warn")+'"><span>'+(k==="err"?"&#9679;":"&#9888;")+'</span><div>'+esc(t)+'</div></div>'
+  ).join("");
+}
+
+document.getElementById("jump").addEventListener("click",()=>{
+  const next=CRITERIA.find(c=>!ans(c.id).level);
+  if(!next) return;
+  const el=document.getElementById("c-"+next.id);
+  el.open=true; el.scrollIntoView({behavior:"smooth",block:"center"});
+});
+document.getElementById("theme").addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  const dark=cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark?"light":"dark");
+});
+
+/* ---------- export ---------- */
+function dl(name,text,mime){
+  const b=new Blob([text],{type:mime}), u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+function rows(){
+  return CRITERIA.map(c=>{
+    const a=ans(c.id), lv=LEVELS.find(l=>l.k===a.level);
+    return {id:c.id,name:c.name,level:c.level,
+            conf:lv?lv.label:"Not Evaluated", remark:(a.remark||"").trim()};
+  });
+}
+function meta(k,d){ return (state.meta[k]||"").trim() || d; }
+
+document.getElementById("ex-md").addEventListener("click",()=>{
+  const r=rows(), c=counts();
+  let m="# Accessibility Conformance Report\n\n";
+  m+="**Product:** "+meta("name","(not stated)")+"  \n";
+  m+="**Version:** "+meta("version","(not stated)")+"  \n";
+  m+="**Report date:** "+meta("date","(not stated)")+"  \n";
+  m+="**Contact:** "+meta("contact","(not stated)")+"\n\n";
+  m+="**Standard:** WCAG 2.1 Level AA, as referenced by EN 301 549 Chapter 9 "+
+     "(the harmonised standard for the European Accessibility Act).\n\n";
+  m+="## Scope\n\n"+meta("scope","(not stated)")+"\n\n";
+  m+="## Evaluation methods\n\n"+meta("method","(not stated)")+"\n\n";
+  m+="## Summary\n\n";
+  m+="| Result | Criteria |\n|---|---|\n";
+  m+="| Supports | "+c.supports+" |\n| Partially Supports | "+c.partial+" |\n";
+  m+="| Does Not Support | "+c.none+" |\n| Not Applicable | "+c.na+" |\n";
+  if(c.unanswered) m+="| **Not Evaluated** | **"+c.unanswered+"** |\n";
+  m+="\n## WCAG 2.1 Level A and AA\n\n";
+  m+="| Criterion | Level | Conformance | Remarks |\n|---|---|---|---|\n";
+  r.forEach(x=>{ m+="| "+x.id+" "+x.name+" | "+x.level+" | "+x.conf+" | "+
+    (x.remark? x.remark.replace(/\|/g,"\\|").replace(/\n+/g," ") : "") + " |\n"; });
+  m+="\n---\n\nVPAT® is a registered service mark of the Information Technology Industry Council. "+
+     "This report is not affiliated with or endorsed by ITI. Generated with ACR Builder.\n";
+  dl("accessibility-conformance-report.md",m,"text/markdown");
+});
+
+document.getElementById("ex-html").addEventListener("click",()=>{
+  const r=rows(), c=counts();
+  const cell=s=>esc(s).replace(/\n/g,"<br>");
+  const style="body{font:15px/1.6 system-ui,sans-serif;max-width:960px;margin:40px auto;padding:0 20px;color:#16171a}"+
+    "table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14px}"+
+    "th,td{border:1px solid #ddd;padding:9px 11px;text-align:left;vertical-align:top}"+
+    "th{background:#f4f4f2;font-size:12px;text-transform:uppercase;letter-spacing:.05em}"+
+    "h1{font-size:26px}h2{font-size:18px;margin-top:32px;border-bottom:1px solid #ddd;padding-bottom:6px}"+
+    "td:nth-child(1){white-space:nowrap;font-family:ui-monospace,monospace;font-size:13px}"+
+    ".m{color:#555;font-size:14px}.f{color:#666;font-size:12px;margin-top:34px;border-top:1px solid #ddd;padding-top:14px}";
+  let h="<!doctype html><html lang=en><meta charset=utf-8><title>Accessibility Conformance Report</title>"+
+    "<style>"+style+"</style><h1>Accessibility Conformance Report</h1>"+
+    "<p class=m><b>Product:</b> "+esc(meta("name","(not stated)"))+"<br>"+
+    "<b>Version:</b> "+esc(meta("version","(not stated)"))+"<br>"+
+    "<b>Report date:</b> "+esc(meta("date","(not stated)"))+"<br>"+
+    "<b>Contact:</b> "+esc(meta("contact","(not stated)"))+"</p>"+
+    "<p class=m><b>Standard:</b> WCAG 2.1 Level AA, as referenced by EN 301 549 Chapter 9, the harmonised "+
+    "standard for the European Accessibility Act.</p>"+
+    "<h2>Scope</h2><p>"+cell(meta("scope","(not stated)"))+"</p>"+
+    "<h2>Evaluation methods</h2><p>"+cell(meta("method","(not stated)"))+"</p>"+
+    "<h2>Summary</h2><table><tr><th>Result</th><th>Criteria</th></tr>"+
+    "<tr><td>Supports</td><td>"+c.supports+"</td></tr>"+
+    "<tr><td>Partially Supports</td><td>"+c.partial+"</td></tr>"+
+    "<tr><td>Does Not Support</td><td>"+c.none+"</td></tr>"+
+    "<tr><td>Not Applicable</td><td>"+c.na+"</td></tr>"+
+    (c.unanswered?"<tr><td><b>Not Evaluated</b></td><td><b>"+c.unanswered+"</b></td></tr>":"")+
+    "</table><h2>WCAG 2.1 Level A and AA</h2><table>"+
+    "<tr><th>Criterion</th><th>Level</th><th>Conformance</th><th>Remarks and explanations</th></tr>";
+  r.forEach(x=>{ h+="<tr><td>"+esc(x.id)+"</td><td>"+x.level+"</td><td>"+esc(x.conf)+"</td><td>"+cell(x.remark)+"</td></tr>"; });
+  h+="</table><p class=f>VPAT® is a registered service mark of the Information Technology Industry "+
+     "Council. This report is not affiliated with or endorsed by ITI. Generated with ACR Builder.</p></html>";
+  dl("accessibility-conformance-report.html",h,"text/html");
+});
+
+document.getElementById("ex-json").addEventListener("click",()=>
+  dl("acr-working-file.json",JSON.stringify(state,null,2),"application/json"));
+document.getElementById("im-json").addEventListener("click",()=>document.getElementById("file").click());
+document.getElementById("file").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const d=JSON.parse(rd.result);
+      if(!d||typeof d!=="object"||!d.answers) throw 0;
+      state=d; save(); location.reload();
+    }catch(err){ alert("That doesn't look like an ACR Builder working file."); } };
+  rd.readAsText(f);
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("Clear the whole report? This cannot be undone.")){
+    localStorage.removeItem(KEY); location.reload();
+  }
+});
+
+refresh();
+})();
+</script>
+</body>
+</html>

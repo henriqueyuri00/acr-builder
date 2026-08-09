@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Conformance Sprint — produce an accessibility conformance report in three days</title>
+<meta name="description" content="A customer asked for your VPAT. A consultancy wants $1,850–$3,100. This is the testing protocol and the four templates, for $49 — plus a free, offline ACR builder.">
+<meta property="og:title" content="The Conformance Sprint">
+<meta property="og:description" content="Produce an accessibility conformance report you can defend, in three days, without a consultancy.">
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#fff; --ink:#16171a; --muted:#5f6470; --line:#e4e4e2;
+  --accent:#1c5d3f; --accent-soft:#e8f1ec; --on-accent:#fff;
+  --warn:#8a5300; --warn-soft:#fdf3e2;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 10px 30px -14px rgba(0,0,0,.16);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+  --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+  --warn:#e0b168; --warn-soft:#2e2413;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+}}
+:root[data-theme=dark]{
+  --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+  --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+  --warn:#e0b168; --warn-soft:#2e2413;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16.5px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px}
+h1,h2,h3{line-height:1.22;letter-spacing:-.02em;margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.skip{position:absolute;left:12px;top:-60px;z-index:60;background:var(--accent);color:var(--on-accent);
+  padding:10px 16px;border-radius:0 0 8px 8px;font-weight:580;text-decoration:none;transition:top .15s}
+.skip:focus{top:0}
+
+header{padding:20px 0;border-bottom:1px solid var(--line)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.brand{font-weight:640;letter-spacing:-.02em}
+.brand span{color:var(--muted);font-weight:400}
+.ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:6px 12px;
+  border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+.ghost:hover{color:var(--ink);border-color:var(--muted)}
+
+.hero{padding:56px 0 12px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+h1{font-size:clamp(31px,5.2vw,46px);max-width:17ch}
+.lede{font-size:19px;color:var(--muted);margin:20px 0 0;max-width:60ch}
+.lede b{color:var(--ink);font-weight:600}
+
+section{padding:38px 0}
+h2{font-size:24px;margin-bottom:14px}
+h3{font-size:17px;margin-bottom:6px}
+p{margin:0 0 15px}
+.muted{color:var(--muted)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:var(--shadow)}
+.card + .card{margin-top:16px}
+.card.free{border-color:color-mix(in srgb,var(--accent) 34%,var(--line))}
+
+.tag{display:inline-block;font:600 11px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;
+  padding:5px 9px;border-radius:5px;background:var(--accent-soft);color:var(--accent);margin-bottom:12px}
+.tag.grey{background:var(--line);color:var(--muted)}
+
+.price{display:flex;align-items:baseline;gap:11px;margin:6px 0 16px;flex-wrap:wrap}
+.price b{font-size:38px;letter-spacing:-.03em}
+.price s{color:var(--muted);font-size:19px}
+.price span{color:var(--muted);font-size:14px}
+
+ul{margin:0 0 16px;padding-left:0;list-style:none}
+li{position:relative;padding-left:26px;margin-bottom:9px}
+li::before{content:"";position:absolute;left:6px;top:.72em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+li.no::before{background:var(--muted);opacity:.45}
+
+.cta{display:inline-block;background:var(--accent);color:var(--on-accent);text-decoration:none;
+  padding:14px 26px;border-radius:10px;font-weight:600;font-size:16px}
+.cta:hover{filter:brightness(1.08)}
+.cta.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.cta.sec:hover{border-color:var(--muted);filter:none}
+.ctarow{display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.fineprint{font-size:13.5px;color:var(--muted);margin-top:12px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin:8px 0 4px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.callout{background:var(--warn-soft);border-left:3px solid var(--warn);padding:16px 18px;border-radius:0 9px 9px 0;margin:18px 0}
+.callout h3{color:var(--warn);margin-bottom:7px}
+.callout p:last-child{margin-bottom:0}
+
+details.faq{border-bottom:1px solid var(--line)}
+details.faq summary{cursor:pointer;padding:15px 0;font-weight:560;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{content:"+";color:var(--muted);font-weight:400}
+details.faq[open] summary::after{content:"−"}
+details.faq .a{padding:0 0 16px;color:var(--muted);font-size:15.5px}
+details.faq .a p:last-child{margin-bottom:0}
+
+footer{border-top:1px solid var(--line);padding:28px 0 50px;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap head">
+    <div class="brand">The Conformance Sprint <span>· accessibility evidence for SaaS teams</span></div>
+    <button class="ghost" id="theme" type="button">Theme</button>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+
+  <div class="hero">
+    <div class="eyebrow">WCAG 2.1 AA · EN 301 549 · EAA</div>
+    <h1>A customer asked for your VPAT. You have no idea what that is.</h1>
+    <p class="lede">The official template is free and blank. A consultancy will fill it in for
+      <b>$1,850–$3,100</b>. This is the testing protocol and the four documents they'd produce,
+      written for the engineer who has to do the work — <b>$49</b>.</p>
+    <div class="ctarow" style="margin-top:26px">
+      <a class="cta" href="#buy">Get the kit — $49</a>
+      <a class="cta sec" href="../index.html">Try the free ACR builder</a>
+    </div>
+    <p class="fineprint">One-time payment. Instant download. No subscription, no account, no overlay script.</p>
+  </div>
+
+  <section>
+    <div class="callout">
+      <h3>Read this before you buy anything, including this</h3>
+      <p>The European Accessibility Act only binds companies with <b>more than 10 employees or
+        more than €2 million turnover</b>. If you are a four-person SaaS under €2m, the EAA very
+        likely does not apply to you as a service provider.</p>
+      <p>But an exemption from the regulation is not an exemption from your customer's
+        procurement questionnaire. The buyer asking for your ACR is managing their own risk by
+        pushing it down the supply chain — that is contract law, and no exemption touches it.
+        <b>If that is not your situation, close this tab and keep your $49.</b></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why this is hard enough to sell</h2>
+    <p>Accessibility conformance sits in an awkward gap. The standard is public and free. The
+      report template is public and free. And yet producing one costs thousands, because the
+      expensive part was never the paperwork — it is knowing whether you actually conform.</p>
+    <p>Automated tools do not close that gap, and they say so themselves. Run the axe CLI and it
+      prints the disclaimer in its own output: <i>"only 20% to 50% of all accessibility issues can
+      automatically be detected. Manual testing is always required."</i> The criteria that fail
+      most often in real audits — info and relationships, name/role/value, focus visibility,
+      keyboard operation — are exactly the ones a scanner cannot see.</p>
+    <p class="muted">So what you are buying is not a checklist. Checklists are free and they are
+      written for auditors. This is written for the person who has to open the codebase.</p>
+  </section>
+
+  <section>
+    <div class="card free">
+      <div class="tag">Free · MIT · no signup</div>
+      <h2>The ACR Builder</h2>
+      <p>Walks all 50 WCAG 2.1 Level A and AA success criteria and exports a clean conformance
+        report as HTML or Markdown. Runs entirely in your browser — no account, no upload, no
+        analytics, works offline.</p>
+      <p>It also refuses to let you file a bad report. Mark a criterion "Does Not Support" with no
+        explanation and it blocks you. Mark something Not Applicable that always applies to a web
+        product and it says so. Fill in all fifty as "Supports" and it warns you that experienced
+        reviewers read that as a sign the testing never happened.</p>
+      <div class="ctarow"><a class="cta sec" href="../index.html">Open the builder</a></div>
+    </div>
+
+    <div class="card">
+      <div class="tag grey">$49 one-time</div>
+      <h2>The Conformance Sprint</h2>
+      <p>The part the free tool cannot do for you: <b>determining whether you actually conform</b>,
+        and producing the evidence that stands behind the claim.</p>
+
+      <h3 style="margin-top:22px">A three-day testing protocol</h3>
+      <ul>
+        <li><b>Day 1 — automated and structural sweep.</b> Runnable axe + Playwright setup for
+          authenticated routes, which tag sets to use and which to avoid, and a console probe for
+          the structural defects scanners miss.</li>
+        <li><b>Day 2 — keyboard and screen reader.</b> The six NVDA and VoiceOver commands you
+          actually need, a scripted six-point walkthrough per page, and a focus-visibility
+          detector you paste into devtools.</li>
+        <li><b>Day 3 — writing it down.</b> How to choose between Supports and Partially Supports
+          honestly, and how to word remarks so they survive procurement review. With before/after
+          examples.</li>
+      </ul>
+
+      <h3 style="margin-top:22px">The four artefacts, as fill-in templates</h3>
+      <ul>
+        <li><b>Evidence log</b> — the one everybody skips, and the only one that matters if a
+          claim is ever challenged.</li>
+        <li><b>Remediation roadmap</b> — prioritised by procurement risk rather than engineering
+          convenience, which is what turns "Partially Supports" from an admission into a plan.</li>
+        <li><b>Accessibility statement</b> — aligned to EAA Annex V, including the
+          disproportionate-burden section and when not to use it.</li>
+        <li><b>Procurement answer bank</b> — the eight questions that come back in nearly every
+          enterprise review, pre-drafted, including the overlay question.</li>
+      </ul>
+
+      <h3 style="margin-top:22px">Also included</h3>
+      <ul>
+        <li>Scoping guidance that keeps the audit finite without creating a boundary a reviewer
+          will reject.</li>
+        <li>Per-criterion notes on how each one actually breaks in modern web apps — placeholder-only
+          forms, tooltips that vanish before you can reach them, <code>aria-label</code> silently
+          overriding a visible button label, duplicate IDs from repeated components.</li>
+        <li>Free updates when EN 301 549 v4.1.1 lands and moves the baseline to WCAG 2.2.</li>
+      </ul>
+
+      <div class="price" id="buy" style="margin-top:26px">
+        <b>$49</b><s>$89</s><span>launch price · one-time · updates included</span>
+      </div>
+      <div class="ctarow">
+        <a class="cta" href="#" data-checkout>Buy the kit — $49</a>
+      </div>
+      <p class="fineprint">Instant download. If it does not help you produce a report you are
+        willing to send to a customer, reply to the receipt and I will refund it — no questions,
+        no form.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What it costs to do this the other ways</h2>
+    <table>
+      <tr><th>Route</th><th>Cost</th><th>What you get</th></tr>
+      <tr><td>Consultancy audit + VPAT completion</td><td class="n">$1,850–$3,100</td>
+          <td>A real audit and a filled report. The right answer if you can afford it.</td></tr>
+      <tr><td>Accessibility platform subscription</td><td class="n">$19–99/mo</td>
+          <td>Tracking and generation. Recurring, and still needs you to do the testing.</td></tr>
+      <tr><td>Free checklists</td><td class="n">$0</td>
+          <td>The criteria restated for auditors. Accurate, and no help at 2am in your own code.</td></tr>
+      <tr><td>An overlay widget</td><td class="n">$490+/yr</td>
+          <td>No conformance, and an increasingly common procurement disqualifier.</td></tr>
+      <tr><td><b>This kit</b></td><td class="n"><b>$49 once</b></td>
+          <td>The protocol, the templates, and the free builder. You do the testing.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Where I stand on overlays</h2>
+    <p>Against them, and it is worth being explicit because it is the main thing being sold to
+      people in your position right now.</p>
+    <p>A script tag cannot make a keyboard trap operable, cannot give a custom combobox a role, and
+      cannot write your conformance report. Overlays do not produce conformance with WCAG or
+      EN 301 549, they have drawn litigation of their own, and buyers' accessibility teams
+      increasingly treat their presence as a negative signal. There is no version of this that does
+      not involve testing your own software. This kit tries to make that as fast as it can honestly
+      be — three days — not to pretend it can be skipped.</p>
+  </section>
+
+  <section>
+    <h2>Questions</h2>
+
+    <details class="faq"><summary>Is this legal advice?</summary><div class="a">
+      <p>No, and nothing here should be read as it. Whether you are in scope of the EAA, and what a
+      given member state requires of you, is a question for a lawyer. This is a testing and
+      documentation methodology — it helps you produce accurate technical evidence. What you do
+      with that evidence is your call.</p></div></details>
+
+    <details class="faq"><summary>Will this make me compliant?</summary><div class="a">
+      <p>No. Nothing sold by anyone will. Testing tells you where you stand; fixing the defects is
+      what moves you toward conformance, and that work happens in your codebase. What this
+      produces is an honest, defensible account of where you are and what you are doing about it —
+      which, for a procurement review, is usually what was actually being asked for.</p></div></details>
+
+    <details class="faq"><summary>Can I just use the free builder and skip the kit?</summary><div class="a">
+      <p>Yes, genuinely. The builder is MIT-licensed and complete — no crippled features, no
+      upsell wall. If you already know how to test against WCAG 2.1 AA, it is all you need, and I
+      would rather you use it and tell someone than buy something you did not need. The kit exists
+      for the case where you do not yet know how to answer the fifty questions it asks.</p></div></details>
+
+    <details class="faq"><summary>What format is it in?</summary><div class="a">
+      <p>Markdown. Readable in any editor, pasteable into Notion, Confluence or Google Docs,
+      diffable in git so you can track what changed between assessments. No DRM, no portal, no
+      login.</p></div></details>
+
+    <details class="faq"><summary>WCAG 2.1 or 2.2?</summary><div class="a">
+      <p>2.1 Level AA, because that is what EN 301 549 v3.2.1 currently incorporates, and
+      EN 301 549 is what the EAA points at. Version 4.1.1 is expected to move the baseline to
+      WCAG 2.2. Buyers of the kit get that update at no cost.</p></div></details>
+
+    <details class="faq"><summary>Who wrote this?</summary><div class="a">
+      <p>It was researched and written with AI assistance, verified against the W3C specification
+      and the axe-core tooling directly rather than from memory — the criteria set is checked
+      programmatically against the normative count of 30 Level A and 20 Level AA. The free builder
+      was tested against itself: doing that turned up five real defects in it, including a 1.1:1
+      contrast failure in dark mode, all of which were fixed. It reports zero axe violations. That
+      seemed worth telling you rather than hiding.</p></div></details>
+  </section>
+
+  <footer>
+    <p>VPAT® is a registered service mark of the Information Technology Industry Council. This
+      product is not affiliated with, endorsed by, or certified by ITI, and does not reproduce or
+      modify their template — it describes how to produce an Accessibility Conformance Report from
+      the WCAG 2.1 success criteria referenced by EN 301 549. WCAG is a W3C Recommendation.
+      Not legal advice.</p>
+  </footer>
+</main>
+
+<script>
+document.getElementById("theme").addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  const dark=cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark?"light":"dark");
+});
+// Checkout URL is injected at deploy time once the merchant account exists.
+// Fails loudly rather than silently sending buyers to a dead link.
+document.querySelectorAll("[data-checkout]").forEach(a=>{
+  const url = window.CHECKOUT_URL || "";
+  if(url){ a.href = url; }
+  else{
+    a.addEventListener("click", e=>{
+      e.preventDefault();
+      alert("Checkout is not connected yet. This page is not live for sale.");
+    });
+  }
+});
+</script>
+</body>
+</html>

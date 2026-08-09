@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACR Builder — write an honest accessibility conformance report</title>
+<meta name="description" content="A free, offline, client-side tool for writing an Accessibility Conformance Report against WCAG 2.1 AA / EN 301 549. Your data never leaves the browser.">
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#fff; --ink:#16171a; --muted:#5f6470; --line:#e4e4e2;
+  --accent:#1c5d3f; --accent-soft:#e8f1ec; --on-accent:#fff;
+  --warn:#8a5300; --warn-soft:#fdf3e2; --danger:#9b2226; --danger-soft:#fdeeee;
+  --ok:#1c5d3f; --shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.12);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]){
+    --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+    --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+    --warn:#e0b168; --warn-soft:#2e2413; --danger:#e88b8e; --danger-soft:#31191a;
+    --ok:#6cc49a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme=dark]{
+  --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+  --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+  --warn:#e0b168; --warn-soft:#2e2413; --danger:#e88b8e; --danger-soft:#31191a;
+  --ok:#6cc49a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.25;letter-spacing:-.015em;margin:0}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0}
+.brand{font-weight:640;font-size:17px;letter-spacing:-.02em}
+.brand span{color:var(--muted);font-weight:400}
+.ghost{background:none;border:1px solid var(--line);color:var(--muted);
+  padding:6px 12px;border-radius:8px;font-size:13px}
+.ghost:hover{color:var(--ink);border-color:var(--muted)}
+
+.hero{padding:44px 0 30px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(28px,4.4vw,40px);max-width:22ch}
+.hero p{color:var(--muted);max-width:64ch;margin:16px 0 0;font-size:17px}
+.privacy{display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:7px 13px;
+  background:var(--accent-soft);color:var(--accent);border-radius:999px;font-size:13px;font-weight:520}
+
+/* progress */
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);
+  padding:11px 0;backdrop-filter:blur(8px)}
+.barin{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.track{flex:1;min-width:160px;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.fill{height:100%;background:var(--accent);width:0;transition:width .25s ease}
+.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+section{padding:34px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:var(--shadow)}
+.card h2{font-size:19px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+label.f{display:block;font-size:13px;font-weight:560;margin-bottom:6px;color:var(--muted)}
+input[type=text],textarea,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--ink);font:inherit;font-size:14px}
+textarea{resize:vertical;min-height:64px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+
+.principle{margin-top:30px}
+.principle > h3{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:14px}
+
+/* Skip link: visible on focus, never display:none (2.4.1). */
+.skip{position:absolute;left:12px;top:-60px;z-index:60;background:var(--accent);color:var(--on-accent);
+  padding:10px 16px;border-radius:0 0 8px 8px;font-weight:580;text-decoration:none;transition:top .15s}
+.skip:focus{top:0}
+
+.crit{background:var(--panel);border:1px solid var(--line);border-radius:11px;margin-bottom:11px;overflow:hidden}
+.crit.done{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.crit > summary{list-style:none;cursor:pointer;padding:14px 17px;display:flex;align-items:center;gap:12px}
+.crit > summary::-webkit-details-marker{display:none}
+.crit > summary:hover{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.cid{font:600 12px/1 var(--mono);color:var(--muted);min-width:42px}
+.cname{font-weight:540;font-size:15px;flex:1}
+.lvl{font:600 10px/1 var(--mono);padding:4px 6px;border-radius:4px;background:var(--line);color:var(--muted);letter-spacing:.04em}
+.pill{font-size:11px;font-weight:620;padding:4px 9px;border-radius:99px;white-space:nowrap}
+.p-sup{background:var(--accent-soft);color:var(--accent)}
+.p-par{background:var(--warn-soft);color:var(--warn)}
+.p-not{background:var(--danger-soft);color:var(--danger)}
+.p-na{background:var(--line);color:var(--muted)}
+.p-none{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+
+.body{padding:4px 17px 18px;border-top:1px solid var(--line)}
+.q{margin:14px 0 0}
+.q dt{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:640;margin-bottom:3px}
+.q dd{margin:0 0 12px;font-size:14.5px}
+.q dd.fail{color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 12px}
+.opt{border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:7px 13px;border-radius:8px;font-size:13px;font-weight:520}
+.opt:hover{border-color:var(--muted);color:var(--ink)}
+.opt[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+.flag{display:flex;gap:9px;padding:11px 13px;border-radius:8px;font-size:13.5px;margin-top:11px;line-height:1.5}
+.flag.warn{background:var(--warn-soft);color:var(--warn)}
+.flag.err{background:var(--danger-soft);color:var(--danger)}
+.flag b{font-weight:640}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+/* Text-on-accent is a token, never an override. Overriding .btn colour per theme
+   outranked .btn.sec on specificity and painted dark-on-dark in dark mode. */
+.btn{background:var(--accent);color:var(--on-accent);border:none;padding:11px 19px;border-radius:9px;font-weight:580;font-size:14.5px}
+.btn:hover{filter:brightness(1.08)}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sec:hover{border-color:var(--muted);filter:none}
+
+.tally{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0}
+.t{padding:13px;border:1px solid var(--line);border-radius:9px;text-align:center}
+.t b{display:block;font-size:24px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.t span{font-size:12px;color:var(--muted)}
+
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 44px;color:var(--muted);font-size:13.5px}
+footer p{max-width:70ch}
+.legal{font-size:12.5px;opacity:.85;margin-top:14px}
+@media print{.bar,header,.hero,.actions,footer{display:none}}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap head">
+    <div class="brand">ACR Builder <span>· WCAG 2.1 AA / EN 301 549</span></div>
+    <button class="ghost" id="theme" type="button">Theme</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Write an accessibility conformance report you can actually defend.</h1>
+    <p>A customer's procurement team asked for your accessibility documentation. The official template is
+       free but blank, and a consultancy wants $1,850&ndash;$3,100 to fill it in. This walks you through all
+       50 WCAG&nbsp;2.1 Level&nbsp;A and AA success criteria and exports a clean report.</p>
+    <div class="privacy">&#9679; Runs entirely in your browser. No account, no upload, no analytics.</div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap barin">
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="count" id="count">0 of 50 assessed</div>
+    <button class="ghost" id="jump" type="button">Next unanswered</button>
+  </div>
+</div>
+
+<main class="wrap" id="main">
+
+  <section>
+    <div class="card">
+      <h2>1. What you're reporting on</h2>
+      <p class="sub">This header appears at the top of the exported report. Reviewers check it first.</p>
+      <div class="grid">
+        <div><label class="f" for="m-name">Product name</label><input type="text" id="m-name" data-meta="name" placeholder="Acme Analytics"></div>
+        <div><label class="f" for="m-ver">Version</label><input type="text" id="m-ver" data-meta="version" placeholder="2026.8"></div>
+        <div><label class="f" for="m-date">Report date</label><input type="text" id="m-date" data-meta="date" placeholder="2026-08-09"></div>
+        <div><label class="f" for="m-contact">Contact for accessibility</label><input type="text" id="m-contact" data-meta="contact" placeholder="a11y@acme.com"></div>
+      </div>
+      <div style="margin-top:14px">
+        <label class="f" for="m-scope">Scope &mdash; exactly what was evaluated</label>
+        <textarea id="m-scope" data-meta="scope" placeholder="Web application at app.acme.com: authentication, dashboard, report builder, billing. Excludes the legacy admin console at admin.acme.com."></textarea>
+      </div>
+      <div style="margin-top:14px">
+        <label class="f" for="m-method">Evaluation methods used</label>
+        <textarea id="m-method" data-meta="method" placeholder="Automated: axe-core 4.x across 40 routes. Manual: keyboard-only traversal of all primary flows. Assistive tech: NVDA 2025.1 + Firefox, VoiceOver + Safari 18. Zoom: 200% and 400% reflow at 320px."></textarea>
+      </div>
+      <div class="flag warn" style="margin-top:16px">
+        <span>&#9888;</span>
+        <div><b>A report with no stated method is not evidence.</b> Reviewers discount conformance claims that
+        don't say how they were tested. "We ran Lighthouse" covers roughly a third of these criteria &mdash;
+        the rest require a human.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="criteria"></section>
+
+  <section>
+    <div class="card">
+      <h2>3. Review and export</h2>
+      <p class="sub">Check the shape of your report before you send it to anyone.</p>
+      <div class="tally" id="tally"></div>
+      <div id="audit"></div>
+      <div class="actions">
+        <button class="btn" id="ex-html" type="button">Export report (HTML)</button>
+        <button class="btn sec" id="ex-md" type="button">Export as Markdown</button>
+        <button class="btn sec" id="ex-json" type="button">Save working file (JSON)</button>
+        <button class="btn sec" id="im-json" type="button">Load working file</button>
+        <button class="btn sec" id="reset" type="button">Clear all</button>
+      </div>
+      <input type="file" id="file" accept="application/json" aria-label="Choose an ACR Builder working file to load" hidden>
+    </div>
+  </section>
+</main>
+
+<div class="wrap">
+  <footer>
+    <p><b>Why this exists.</b> The conformance levels here &mdash; Supports, Partially Supports, Does Not
+    Support, Not Applicable &mdash; are the same vocabulary procurement reviewers expect. What this tool
+    refuses to do is let you produce a clean-looking report you can't back up. An honest "Partially Supports"
+    with a dated remediation date wins more deals than a suspicious wall of "Supports".</p>
+    <p style="margin-top:12px"><b>This is not an accessibility overlay.</b> Overlay widgets that promise
+    instant compliance do not produce conformance, and buyers' accessibility teams increasingly treat them
+    as a negative signal. There is no way to do this without testing your product.</p>
+    <p class="legal">VPAT&reg; is a registered service mark of the Information Technology Industry Council
+    (ITI). This tool is not affiliated with or endorsed by ITI, and does not reproduce or modify their
+    template &mdash; it produces an Accessibility Conformance Report from the underlying WCAG&nbsp;2.1
+    success criteria. Not legal advice. MIT licensed.</p>
+  </footer>
+</div>
+
+<script>
+/*!
+ * WCAG 2.1 Level A + AA success criteria (50 total: 30 A, 20 AA).
+ * This is the normative set referenced by EN 301 549 Chapter 9, which is the
+ * harmonised standard used to claim conformance under the European
+ * Accessibility Act (EAA).
+ *
+ * Field guide:
+ *   what  - plain-English meaning, no standards-speak
+ *   ask   - what a procurement reviewer is actually checking when they read
+ *           your conformance report against this row
+ *   fail  - the way real web applications most commonly break it
+ *   na    - the only circumstances under which "Not Applicable" is honest
+ *           (null = it essentially always applies to a web app)
+ *
+ * Licence: MIT. Not legal advice.
+ */
+
+const CRITERIA = [
+  /* ---------------------------------------------------------------- 1. Perceivable */
+  {
+    id: "1.1.1", name: "Non-text Content", level: "A", principle: "Perceivable",
+    what: "Every image, icon, chart and control that isn't text needs a text alternative that serves the same purpose.",
+    ask: "Do screen reader users get the same information from your UI as sighted users?",
+    fail: "Icon-only buttons (a bare <svg> inside a <button>) with no accessible name. Decorative images given descriptive alt text instead of alt=\"\", which adds noise rather than removing it.",
+    na: null
+  },
+  {
+    id: "1.2.1", name: "Audio-only and Video-only (Prerecorded)", level: "A", principle: "Perceivable",
+    what: "Prerecorded audio-only content needs a transcript; prerecorded video-only content needs a transcript or audio description.",
+    ask: "Is there a text equivalent for media that carries information in only one sensory channel?",
+    fail: "A silent product demo GIF or looping background video that demonstrates a workflow, with nothing describing what it shows.",
+    na: "You publish no prerecorded audio-only or video-only content anywhere in the product."
+  },
+  {
+    id: "1.2.2", name: "Captions (Prerecorded)", level: "A", principle: "Perceivable",
+    what: "Prerecorded video with sound needs synchronised captions.",
+    ask: "Can a deaf user follow your onboarding and help videos?",
+    fail: "Relying on YouTube's auto-generated captions. Auto-captions are not accurate enough to count as conformant; they need review.",
+    na: "The product contains no prerecorded video with an audio track."
+  },
+  {
+    id: "1.2.3", name: "Audio Description or Media Alternative (Prerecorded)", level: "A", principle: "Perceivable",
+    what: "Prerecorded video needs either an audio description of the important visuals, or a full text alternative.",
+    ask: "Does a blind user get the visual information your videos convey?",
+    fail: "A screencast where the narrator says \"just click here and then here\" — the words carry none of the meaning without the picture.",
+    na: "The product contains no prerecorded video with an audio track."
+  },
+  {
+    id: "1.3.1", name: "Info and Relationships", level: "A", principle: "Perceivable",
+    what: "Structure conveyed visually (headings, lists, tables, form labels, groupings) must also exist in the markup.",
+    ask: "Is your visual hierarchy real, or is it just CSS?",
+    fail: "Styling a <div> to look like a heading. Building a data table out of flexbox divs. Placeholder text used instead of a real <label>. This is one of the most frequently cited criteria in audits.",
+    na: null
+  },
+  {
+    id: "1.3.2", name: "Meaningful Sequence", level: "A", principle: "Perceivable",
+    what: "When reading order matters, the DOM order must match the order the content is meant to be read in.",
+    ask: "Does the content still make sense when the CSS is switched off?",
+    fail: "Using CSS order, grid-area or position to visually reorder content while leaving the DOM in a different sequence.",
+    na: null
+  },
+  {
+    id: "1.3.3", name: "Sensory Characteristics", level: "A", principle: "Perceivable",
+    what: "Instructions must not rely only on shape, colour, size, position or sound.",
+    ask: "Would the instruction still work read aloud, with no visual reference?",
+    fail: "\"Click the green button on the right\" or \"see the box below\" with no other identifying label.",
+    na: null
+  },
+  {
+    id: "1.4.1", name: "Use of Color", level: "A", principle: "Perceivable",
+    what: "Colour must never be the only way information is conveyed.",
+    ask: "Can a colourblind user tell your states apart?",
+    fail: "Form validation that only turns a field border red. Chart series distinguished purely by colour with no direct labels, patterns or markers. Status dots with no text.",
+    na: null
+  },
+  {
+    id: "1.4.2", name: "Audio Control", level: "A", principle: "Perceivable",
+    what: "Any audio that plays automatically for more than 3 seconds needs a way to pause, stop or mute it.",
+    ask: "Can a screen reader user silence your page so they can hear their own screen reader?",
+    fail: "Autoplaying a video with sound on the marketing page or in an embedded player.",
+    na: "No audio plays automatically anywhere."
+  },
+  {
+    id: "1.2.4", name: "Captions (Live)", level: "AA", principle: "Perceivable",
+    what: "Live audio content in synchronised media needs real-time captions.",
+    ask: "Are your webinars and live streams captioned as they happen?",
+    fail: "Running live product webinars or in-app video calls with no live captioning option.",
+    na: "You broadcast no live synchronised media."
+  },
+  {
+    id: "1.2.5", name: "Audio Description (Prerecorded)", level: "AA", principle: "Perceivable",
+    what: "Prerecorded video needs an actual audio description track (at AA the text-alternative escape hatch from 1.2.3 is gone).",
+    ask: "Is there a described audio track, not just a transcript?",
+    fail: "Assuming the transcript that satisfied 1.2.3 also satisfies this. At AA it does not.",
+    na: "The product contains no prerecorded video with an audio track."
+  },
+  {
+    id: "1.3.4", name: "Orientation", level: "AA", principle: "Perceivable",
+    what: "Don't lock content to portrait or landscape unless the orientation is essential.",
+    ask: "Does your app work rotated, for a user whose device is mounted to a wheelchair?",
+    fail: "A mobile web view that shows \"please rotate your device\" instead of reflowing.",
+    na: null
+  },
+  {
+    id: "1.3.5", name: "Identify Input Purpose", level: "AA", principle: "Perceivable",
+    what: "Inputs collecting information about the user need a programmatic autocomplete purpose.",
+    ask: "Can the browser and assistive tech autofill your forms correctly?",
+    fail: "Sign-up and billing forms with no autocomplete attributes, or with autocomplete=\"off\" applied wholesale.",
+    na: null
+  },
+  {
+    id: "1.4.3", name: "Contrast (Minimum)", level: "AA", principle: "Perceivable",
+    what: "Text needs 4.5:1 contrast against its background; large text (18.66px bold or 24px) needs 3:1.",
+    ask: "Is your text readable in low vision, poor light, or on a cheap monitor?",
+    fail: "Grey placeholder and helper text. Light-grey-on-white secondary labels. White text on brand-colour buttons where the brand colour is mid-tone. Disabled controls are exempt, but 'disabled-looking' styling on enabled controls is not.",
+    na: null
+  },
+  {
+    id: "1.4.4", name: "Resize Text", level: "AA", principle: "Perceivable",
+    what: "Text must stay readable and functional when zoomed to 200% without assistive technology.",
+    ask: "Does your layout survive a browser zoom to 200%?",
+    fail: "Fixed-height containers with overflow:hidden that clip text once it grows. Text sized in px inside a fixed-px container.",
+    na: null
+  },
+  {
+    id: "1.4.5", name: "Images of Text", level: "AA", principle: "Perceivable",
+    what: "Use real text rather than pictures of text, unless the presentation is essential or customisable.",
+    ask: "Is any of your text baked into an image where it can't be resized or read aloud?",
+    fail: "Marketing hero banners, pricing tables or feature comparison graphics exported from Figma as PNGs with the text inside.",
+    na: null
+  },
+  {
+    id: "1.4.10", name: "Reflow", level: "AA", principle: "Perceivable",
+    what: "Content must reflow into a single column at 320 CSS pixels wide without two-dimensional scrolling.",
+    ask: "Can a user at 400% zoom read your app without scrolling sideways on every line?",
+    fail: "Wide data tables and dashboards with fixed min-widths. Side-by-side layouts that never collapse. Note: data tables are one of the few things allowed to scroll horizontally.",
+    na: null
+  },
+  {
+    id: "1.4.11", name: "Non-text Contrast", level: "AA", principle: "Perceivable",
+    what: "UI component boundaries and meaningful graphics need 3:1 contrast against adjacent colours.",
+    ask: "Can a low-vision user see where your input fields and buttons are?",
+    fail: "Very light input borders (#e5e7eb on white is roughly 1.2:1 and fails). Low-contrast focus rings. Chart lines and icons in pale tints.",
+    na: null
+  },
+  {
+    id: "1.4.12", name: "Text Spacing", level: "AA", principle: "Perceivable",
+    what: "No loss of content when users override line height to 1.5, paragraph spacing to 2x, letter spacing to 0.12em and word spacing to 0.16em.",
+    ask: "Does your layout break when a dyslexic user applies their own spacing stylesheet?",
+    fail: "Buttons and badges with fixed heights that clip their own labels once spacing increases.",
+    na: null
+  },
+  {
+    id: "1.4.13", name: "Content on Hover or Focus", level: "AA", principle: "Perceivable",
+    what: "Content that appears on hover or focus must be dismissible (Escape), hoverable (you can move the pointer onto it) and persistent (it doesn't vanish on its own).",
+    ask: "Can a user with a magnifier reach your tooltip content without it disappearing?",
+    fail: "Tooltips that close on mouseleave of the trigger, so the pointer can never travel to the tooltip. Tooltips with no Escape handler. Custom tooltips are a much more common failure than the native title attribute.",
+    na: null
+  },
+
+  /* ---------------------------------------------------------------- 2. Operable */
+  {
+    id: "2.1.1", name: "Keyboard", level: "A", principle: "Operable",
+    what: "Everything must be operable from a keyboard alone.",
+    ask: "Can someone who cannot use a mouse complete every task in your product?",
+    fail: "Click handlers attached to <div> or <span> with no key handler, no tabindex and no role. Custom dropdowns, drag-and-drop and canvas interactions with no keyboard path.",
+    na: null
+  },
+  {
+    id: "2.1.2", name: "No Keyboard Trap", level: "A", principle: "Operable",
+    what: "Keyboard focus must always be able to move away from any component.",
+    ask: "Can a keyboard user get out of your modal?",
+    fail: "Modals that trap focus correctly but provide no Escape key and no reachable close button. Third-party embeds (payment iframes, chat widgets) that swallow focus.",
+    na: null
+  },
+  {
+    id: "2.1.4", name: "Character Key Shortcuts", level: "A", principle: "Operable",
+    what: "Single-character shortcuts must be switchable off, remappable, or active only on focus.",
+    ask: "Does a speech-input user trigger your shortcuts by accident just by talking?",
+    fail: "Adding single-key shortcuts (j/k navigation, 'c' to compose, '/' to search) globally with no way to disable them.",
+    na: "The product implements no single-character key shortcuts."
+  },
+  {
+    id: "2.2.1", name: "Timing Adjustable", level: "A", principle: "Operable",
+    what: "Time limits must be adjustable, extendable, or turned off.",
+    ask: "Does a user who reads slowly lose their work when the session expires?",
+    fail: "Session timeouts that log the user out silently and discard unsaved form data with no warning and no extend option.",
+    na: "The product enforces no time limits at all — check session expiry, OTP windows and auto-advancing content before claiming this."
+  },
+  {
+    id: "2.2.2", name: "Pause, Stop, Hide", level: "A", principle: "Operable",
+    what: "Moving, blinking or auto-updating content lasting more than 5 seconds needs a pause, stop or hide control.",
+    ask: "Can a user with attention or vestibular difficulties stop your animation?",
+    fail: "Auto-rotating carousels and testimonial sliders with no pause button. Infinitely animated background gradients. Live-updating dashboards with no freeze.",
+    na: null
+  },
+  {
+    id: "2.3.1", name: "Three Flashes or Below Threshold", level: "A", principle: "Operable",
+    what: "Nothing may flash more than three times per second.",
+    ask: "Could your UI trigger a seizure?",
+    fail: "Rarely failed deliberately; check loading spinners, video content and any rapid strobe transitions.",
+    na: null
+  },
+  {
+    id: "2.4.1", name: "Bypass Blocks", level: "A", principle: "Operable",
+    what: "Provide a way to skip repeated blocks of content, such as a skip link or proper landmarks.",
+    ask: "Does a keyboard user have to tab through your whole nav on every page?",
+    fail: "No skip link, and no <main> landmark. A skip link that exists but is permanently hidden with display:none never receives focus and does not count.",
+    na: null
+  },
+  {
+    id: "2.4.2", name: "Page Titled", level: "A", principle: "Operable",
+    what: "Every page needs a descriptive, unique title.",
+    ask: "Can a user with 20 tabs open tell which one is which?",
+    fail: "Single-page apps that never update document.title on route change, leaving every view titled the same.",
+    na: null
+  },
+  {
+    id: "2.4.3", name: "Focus Order", level: "A", principle: "Operable",
+    what: "Focus must move in an order that preserves meaning and operability.",
+    ask: "Does tabbing through your page follow a sensible path?",
+    fail: "Positive tabindex values (tabindex=\"3\") that hijack the order. Modals that open without moving focus into them, leaving the user tabbing through the page behind.",
+    na: null
+  },
+  {
+    id: "2.4.4", name: "Link Purpose (In Context)", level: "A", principle: "Operable",
+    what: "The purpose of each link must be clear from its text, or from its text plus its immediate context.",
+    ask: "Does your list of links make sense when read out on its own?",
+    fail: "A page full of \"Read more\", \"Click here\" and \"Learn more\" links. Screen reader users often navigate by pulling up a list of all links, stripped of surrounding text.",
+    na: null
+  },
+  {
+    id: "2.5.1", name: "Pointer Gestures", level: "A", principle: "Operable",
+    what: "Multipoint or path-based gestures need a single-pointer alternative.",
+    ask: "Can a user who can only tap use your swipe and pinch features?",
+    fail: "Swipe-to-delete, pinch-to-zoom on a map, or a drag-only slider with no button or input alternative.",
+    na: "The product uses no multipoint or path-based gestures."
+  },
+  {
+    id: "2.5.2", name: "Pointer Cancellation", level: "A", principle: "Operable",
+    what: "Actions must not fire on down-event alone; users need to be able to abort by moving away before releasing.",
+    ask: "If a user presses the wrong button, can they slide off it to cancel?",
+    fail: "Wiring destructive actions to onMouseDown or onTouchStart instead of onClick.",
+    na: null
+  },
+  {
+    id: "2.5.3", name: "Label in Name", level: "A", principle: "Operable",
+    what: "A control's accessible name must contain the visible label text.",
+    ask: "Can a speech-input user say what they see and have it work?",
+    fail: "A button reading \"Save\" given aria-label=\"Submit form\". The visible word is now absent from the accessible name, so \"click Save\" fails. aria-label silently overrides visible text — this is the single most common way well-intentioned ARIA breaks things.",
+    na: null
+  },
+  {
+    id: "2.5.4", name: "Motion Actuation", level: "A", principle: "Operable",
+    what: "Functions triggered by device motion must also work through the UI, and motion actuation must be disableable.",
+    ask: "Can a user with tremor avoid triggering actions by accident?",
+    fail: "Shake-to-undo or tilt-to-navigate with no button equivalent.",
+    na: "The product responds to no device motion or user motion."
+  },
+  {
+    id: "2.4.5", name: "Multiple Ways", level: "AA", principle: "Operable",
+    what: "Offer more than one way to locate a page within a set of pages.",
+    ask: "Is there a search, sitemap or index — not just the nav?",
+    fail: "Documentation and marketing sites with navigation only and no search or sitemap.",
+    na: "Applies to sets of pages; a step in a process is exempt."
+  },
+  {
+    id: "2.4.6", name: "Headings and Labels", level: "AA", principle: "Operable",
+    what: "Headings and labels must describe the topic or purpose.",
+    ask: "Are your headings informative, or decorative?",
+    fail: "Generic headings like \"Section\" or \"More\". Form labels that say \"Name\" on a page with four different name fields.",
+    na: null
+  },
+  {
+    id: "2.4.7", name: "Focus Visible", level: "AA", principle: "Operable",
+    what: "Keyboard focus must always be visible.",
+    ask: "Can a keyboard user see where they are?",
+    fail: "The single most common deliberate accessibility failure on the web: a global *:focus { outline: none } to make the design look tidy. Use :focus-visible instead of removing the indicator.",
+    na: null
+  },
+
+  /* ---------------------------------------------------------------- 3. Understandable */
+  {
+    id: "3.1.1", name: "Language of Page", level: "A", principle: "Understandable",
+    what: "The default human language of each page must be set programmatically.",
+    ask: "Does the screen reader pronounce your content in the right language?",
+    fail: "A missing or wrong lang attribute on <html>. A boilerplate lang=\"en\" left on a site that is actually in another language.",
+    na: null
+  },
+  {
+    id: "3.2.1", name: "On Focus", level: "A", principle: "Understandable",
+    what: "Moving focus to a component must not automatically cause a change of context.",
+    ask: "Does anything unexpected happen just from tabbing?",
+    fail: "Opening a modal, submitting a form or navigating away when a field receives focus.",
+    na: null
+  },
+  {
+    id: "3.2.2", name: "On Input", level: "A", principle: "Understandable",
+    what: "Changing a setting must not automatically cause a change of context unless the user was warned first.",
+    ask: "Does selecting an option unexpectedly navigate the user somewhere?",
+    fail: "A <select> that navigates on change. Auto-submitting a form when the last field is filled.",
+    na: null
+  },
+  {
+    id: "3.3.1", name: "Error Identification", level: "A", principle: "Understandable",
+    what: "Input errors must be identified and described in text.",
+    ask: "Does a screen reader user know which field failed and why?",
+    fail: "Errors shown only as a red border or a red asterisk, with no text and no programmatic association to the field.",
+    na: null
+  },
+  {
+    id: "3.3.2", name: "Labels or Instructions", level: "A", principle: "Understandable",
+    what: "Inputs that need user input must have labels or instructions.",
+    ask: "Does every field have a real, persistent label?",
+    fail: "Placeholder-only forms. The placeholder disappears the moment typing starts, taking the label with it, and it fails contrast far more often than not.",
+    na: null
+  },
+  {
+    id: "3.1.2", name: "Language of Parts", level: "AA", principle: "Understandable",
+    what: "Passages in a different language need their own lang attribute.",
+    ask: "Are foreign-language phrases marked up so they're pronounced correctly?",
+    fail: "Mixed-language testimonials, product names or quoted content with no lang attribute on the fragment.",
+    na: "All content is in a single language."
+  },
+  {
+    id: "3.2.3", name: "Consistent Navigation", level: "AA", principle: "Understandable",
+    what: "Repeated navigation must appear in the same relative order across pages.",
+    ask: "Does your nav stay put, or reshuffle between views?",
+    fail: "Nav items that reorder based on usage, recency or personalisation.",
+    na: "Applies to sets of pages."
+  },
+  {
+    id: "3.2.4", name: "Consistent Identification", level: "AA", principle: "Understandable",
+    what: "Components with the same function must be labelled consistently.",
+    ask: "Is the same action called the same thing everywhere?",
+    fail: "The same action called \"Delete\" on one screen, \"Remove\" on another and \"Trash\" on a third. Same icon, three different accessible names.",
+    na: "Applies to sets of pages."
+  },
+  {
+    id: "3.3.3", name: "Error Suggestion", level: "AA", principle: "Understandable",
+    what: "When an input error is detected and a correction is known, suggest it.",
+    ask: "Do your error messages tell the user how to fix the problem?",
+    fail: "\"Invalid input\" or \"Something went wrong\" with no indication of the expected format.",
+    na: null
+  },
+  {
+    id: "3.3.4", name: "Error Prevention (Legal, Financial, Data)", level: "AA", principle: "Understandable",
+    what: "For legal commitments, financial transactions and data deletion, submissions must be reversible, checked or confirmable.",
+    ask: "Can a user undo or review before they're committed?",
+    fail: "One-click irreversible destructive actions — delete account, cancel subscription, submit payment — with no confirmation step or undo window.",
+    na: "The product involves no legal commitments, financial transactions, test responses or user-controllable data deletion. Rare for SaaS; check your billing and delete flows before claiming this."
+  },
+
+  /* ---------------------------------------------------------------- 4. Robust */
+  {
+    id: "4.1.1", name: "Parsing", level: "A", principle: "Robust",
+    what: "Elements must have complete tags, be properly nested, and have unique IDs.",
+    ask: "Is your markup well-formed enough for assistive tech to parse?",
+    fail: "Duplicate id attributes from repeated components — the classic React failure where a list renders the same id on every row, breaking every label and aria-describedby that points at it.",
+    na: "Note: WCAG 2.2 removed this criterion as obsolete, since modern browsers and assistive tech handle malformed markup consistently. It remains normative in WCAG 2.1 and therefore in EN 301 549. Most reports now mark it Supports."
+  },
+  {
+    id: "4.1.2", name: "Name, Role, Value", level: "A", principle: "Robust",
+    what: "Every UI component needs a programmatically determinable name, role, and state.",
+    ask: "Does your custom component announce itself correctly to a screen reader?",
+    fail: "Custom components built from divs with no role, no accessible name and no state. A toggle that never exposes aria-checked. A collapsible that never exposes aria-expanded. Together with 1.3.1 and 4.1.2, this accounts for a large share of all audit findings.",
+    na: null
+  },
+  {
+    id: "4.1.3", name: "Status Messages", level: "AA", principle: "Robust",
+    what: "Status messages must be programmatically exposed so assistive tech announces them without moving focus.",
+    ask: "Does a screen reader user hear your toasts, validation summaries and loading states?",
+    fail: "Toast notifications, \"3 results found\" counters, autosave indicators and async loading states rendered with no live region, so a screen reader user never learns they happened.",
+    na: null
+  }
+];
+
+/* Integrity guard: the set is normatively fixed at 30 Level A + 20 Level AA.
+   If these numbers ever drift, the report this tool generates is wrong. */
+const _A  = CRITERIA.filter(c => c.level === "A").length;
+const _AA = CRITERIA.filter(c => c.level === "AA").length;
+if (_A !== 30 || _AA !== 20) {
+  throw new Error(`Criteria set corrupt: expected 30 A / 20 AA, got ${_A} A / ${_AA} AA`);
+}
+
+if (typeof module !== "undefined" && module.exports) module.exports = { CRITERIA };
+
+</script>
+<script>
+(function(){
+"use strict";
+const KEY="acr-builder-v1";
+const LEVELS=[
+  {k:"supports", label:"Supports",           cls:"p-sup", desc:"Meets the criterion without known defects."},
+  {k:"partial",  label:"Partially Supports", cls:"p-par", desc:"Some functionality does not meet it."},
+  {k:"none",     label:"Does Not Support",   cls:"p-not", desc:"The majority does not meet it."},
+  {k:"na",       label:"Not Applicable",     cls:"p-na",  desc:"The criterion has no bearing on this product."}
+];
+let state = load();
+
+function load(){
+  try{ const r=JSON.parse(localStorage.getItem(KEY)); if(r&&r.answers) return r; }catch(e){}
+  return {meta:{}, answers:{}};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function ans(id){ return state.answers[id] || {}; }
+
+/* ---------- render criteria ---------- */
+const host=document.getElementById("criteria");
+const ORDER=["Perceivable","Operable","Understandable","Robust"];
+let html='<div class="card"><h2>2. Assess each criterion</h2><p class="sub">Fifty rows. You cannot skip '+
+         'them &mdash; an incomplete report is what gets sent back with questions.</p></div>';
+ORDER.forEach(p=>{
+  html+='<div class="principle"><h3>'+p+'</h3>';
+  CRITERIA.filter(c=>c.principle===p).forEach(c=>{
+    html+=renderCrit(c);
+  });
+  html+='</div>';
+});
+host.innerHTML=html;
+
+function renderCrit(c){
+  const a=ans(c.id);
+  const lv=LEVELS.find(l=>l.k===a.level);
+  return '<details class="crit'+(a.level?" done":"")+'" id="c-'+c.id+'" data-id="'+c.id+'">'+
+    '<summary>'+
+      '<span class="cid">'+c.id+'</span>'+
+      '<span class="cname">'+esc(c.name)+'</span>'+
+      '<span class="lvl">'+c.level+'</span>'+
+      '<span class="pill '+(lv?lv.cls:"p-none")+'">'+(lv?lv.label:"Not assessed")+'</span>'+
+    '</summary>'+
+    '<div class="body">'+
+      '<dl class="q">'+
+        '<dt>What it means</dt><dd>'+esc(c.what)+'</dd>'+
+        '<dt>What the reviewer is checking</dt><dd>'+esc(c.ask)+'</dd>'+
+        '<dt>How this usually breaks</dt><dd class="fail">'+esc(c.fail)+'</dd>'+
+      '</dl>'+
+      '<div class="opts" role="group" aria-label="Conformance level for '+c.id+'">'+
+        LEVELS.map(l=>'<button type="button" class="opt" data-set="'+l.k+'" title="'+esc(l.desc)+'" '+
+          'aria-pressed="'+(a.level===l.k)+'">'+l.label+'</button>').join("")+
+      '</div>'+
+      '<label class="f" for="r-'+c.id+'">Remarks and explanations</label>'+
+      '<textarea id="r-'+c.id+'" data-remark="'+c.id+'" placeholder="'+esc(remarkHint(c))+'">'+esc(a.remark||"")+'</textarea>'+
+      '<div data-flag="'+c.id+'">'+flagFor(c,a)+'</div>'+
+    '</div></details>';
+}
+
+function remarkHint(c){
+  return c.na
+    ? 'If Not Applicable, state why. Legitimately N/A when: '+c.na
+    : 'Name the components tested and any known defects, with a target date for anything unresolved.';
+}
+
+/* honesty guardrails, per row */
+function flagFor(c,a){
+  if(!a.level) return "";
+  const hasRemark=(a.remark||"").trim().length>=12;
+  if((a.level==="partial"||a.level==="none") && !hasRemark)
+    return '<div class="flag err"><span>&#9679;</span><div><b>A remark is required here.</b> '+
+      '"Partially Supports" and "Does Not Support" are only credible when they name the specific defect. '+
+      'Reviewers read this column far more carefully than the level itself.</div></div>';
+  if(a.level==="na" && !c.na)
+    return '<div class="flag err"><span>&#9679;</span><div><b>This criterion is almost never Not Applicable '+
+      'for a web product.</b> N/A means the criterion cannot apply &mdash; not that you haven\'t built the '+
+      'feature well. If you\'re unsure, "Does Not Support" is the safer and more honest answer.</div></div>';
+  if(a.level==="na" && c.na && !hasRemark)
+    return '<div class="flag warn"><span>&#9888;</span><div><b>Justify the N/A.</b> Legitimately N/A when: '+
+      esc(c.na)+'</div></div>';
+  return "";
+}
+
+/* ---------- events ---------- */
+host.addEventListener("click",e=>{
+  const b=e.target.closest("[data-set]"); if(!b) return;
+  const d=b.closest(".crit"), id=d.dataset.id;
+  const a=state.answers[id]||(state.answers[id]={});
+  a.level = (a.level===b.dataset.set) ? undefined : b.dataset.set;
+  if(!a.level) delete a.level;
+  d.querySelectorAll("[data-set]").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.set===a.level)));
+  const c=CRITERIA.find(x=>x.id===id), lv=LEVELS.find(l=>l.k===a.level);
+  const pill=d.querySelector(".pill");
+  pill.className="pill "+(lv?lv.cls:"p-none"); pill.textContent=lv?lv.label:"Not assessed";
+  d.classList.toggle("done", !!a.level);
+  d.querySelector("[data-flag]").innerHTML=flagFor(c,a);
+  save(); refresh();
+});
+host.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.dataset.remark){
+    const id=t.dataset.remark;
+    const a=state.answers[id]||(state.answers[id]={});
+    a.remark=t.value;
+    const c=CRITERIA.find(x=>x.id===id);
+    t.closest(".body").querySelector("[data-flag]").innerHTML=flagFor(c,a);
+    save(); refresh();
+  }
+});
+document.querySelectorAll("[data-meta]").forEach(el=>{
+  el.value = state.meta[el.dataset.meta]||"";
+  el.addEventListener("input",()=>{ state.meta[el.dataset.meta]=el.value; save(); });
+});
+
+/* ---------- progress + summary ---------- */
+function counts(){
+  const c={supports:0,partial:0,none:0,na:0,unanswered:0};
+  CRITERIA.forEach(x=>{ const l=ans(x.id).level; if(l) c[l]++; else c.unanswered++; });
+  return c;
+}
+function refresh(){
+  const c=counts(), done=50-c.unanswered;
+  document.getElementById("fill").style.width=(done/50*100)+"%";
+  document.getElementById("count").textContent=done+" of 50 assessed";
+  document.getElementById("tally").innerHTML=
+    [["Supports",c.supports],["Partially",c.partial],["Does Not",c.none],["N/A",c.na],["Left",c.unanswered]]
+    .map(([k,v])=>'<div class="t"><b>'+v+'</b><span>'+k+'</span></div>').join("");
+
+  const f=[];
+  if(c.unanswered)
+    f.push(["warn",c.unanswered+" criteria are still unassessed. A partial report tells a reviewer you didn't finish."]);
+  if(c.supports===50)
+    f.push(["err","Every one of the 50 criteria is marked Supports. Full conformance across an entire product is rare enough that experienced reviewers treat an all-Supports report as a sign the testing wasn't real. If it is genuinely true, your evaluation-methods section needs to prove it."]);
+  const naMissing=CRITERIA.filter(x=>ans(x.id).level==="na" && !x.na);
+  if(naMissing.length)
+    f.push(["err",naMissing.length+" criteri"+(naMissing.length>1?"a are":"on is")+" marked Not Applicable that essentially always applies to a web product: "+naMissing.map(x=>x.id).join(", ")+"."]);
+  const noRemark=CRITERIA.filter(x=>{const a=ans(x.id); return (a.level==="partial"||a.level==="none") && (a.remark||"").trim().length<12;});
+  if(noRemark.length)
+    f.push(["err",noRemark.length+" non-conforming criteri"+(noRemark.length>1?"a have":"on has")+" no remark explaining the defect: "+noRemark.map(x=>x.id).join(", ")+"."]);
+  if(!(state.meta.method||"").trim())
+    f.push(["warn","No evaluation methods recorded. This is the first thing a procurement reviewer reads."]);
+  if(!f.length && !c.unanswered)
+    f.push(["ok","Report is complete and internally consistent. Every non-conforming criterion is explained."]);
+
+  document.getElementById("audit").innerHTML=f.map(([k,t])=>
+    k==="ok" ? '<div class="flag" style="background:var(--accent-soft);color:var(--accent)"><span>&#10003;</span><div>'+esc(t)+'</div></div>'
+             : '<div class="flag '+(k==="err"?"err":"warn")+'"><span>'+(k==="err"?"&#9679;":"&#9888;")+'</span><div>'+esc(t)+'</div></div>'
+  ).join("");
+}
+
+document.getElementById("jump").addEventListener("click",()=>{
+  const next=CRITERIA.find(c=>!ans(c.id).level);
+  if(!next) return;
+  const el=document.getElementById("c-"+next.id);
+  el.open=true; el.scrollIntoView({behavior:"smooth",block:"center"});
+});
+document.getElementById("theme").addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  const dark=cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark?"light":"dark");
+});
+
+/* ---------- export ---------- */
+function dl(name,text,mime){
+  const b=new Blob([text],{type:mime}), u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+function rows(){
+  return CRITERIA.map(c=>{
+    const a=ans(c.id), lv=LEVELS.find(l=>l.k===a.level);
+    return {id:c.id,name:c.name,level:c.level,
+            conf:lv?lv.label:"Not Evaluated", remark:(a.remark||"").trim()};
+  });
+}
+function meta(k,d){ return (state.meta[k]||"").trim() || d; }
+
+document.getElementById("ex-md").addEventListener("click",()=>{
+  const r=rows(), c=counts();
+  let m="# Accessibility Conformance Report\n\n";
+  m+="**Product:** "+meta("name","(not stated)")+"  \n";
+  m+="**Version:** "+meta("version","(not stated)")+"  \n";
+  m+="**Report date:** "+meta("date","(not stated)")+"  \n";
+  m+="**Contact:** "+meta("contact","(not stated)")+"\n\n";
+  m+="**Standard:** WCAG 2.1 Level AA, as referenced by EN 301 549 Chapter 9 "+
+     "(the harmonised standard for the European Accessibility Act).\n\n";
+  m+="## Scope\n\n"+meta("scope","(not stated)")+"\n\n";
+  m+="## Evaluation methods\n\n"+meta("method","(not stated)")+"\n\n";
+  m+="## Summary\n\n";
+  m+="| Result | Criteria |\n|---|---|\n";
+  m+="| Supports | "+c.supports+" |\n| Partially Supports | "+c.partial+" |\n";
+  m+="| Does Not Support | "+c.none+" |\n| Not Applicable | "+c.na+" |\n";
+  if(c.unanswered) m+="| **Not Evaluated** | **"+c.unanswered+"** |\n";
+  m+="\n## WCAG 2.1 Level A and AA\n\n";
+  m+="| Criterion | Level | Conformance | Remarks |\n|---|---|---|---|\n";
+  r.forEach(x=>{ m+="| "+x.id+" "+x.name+" | "+x.level+" | "+x.conf+" | "+
+    (x.remark? x.remark.replace(/\|/g,"\\|").replace(/\n+/g," ") : "") + " |\n"; });
+  m+="\n---\n\nVPAT® is a registered service mark of the Information Technology Industry Council. "+
+     "This report is not affiliated with or endorsed by ITI. Generated with ACR Builder.\n";
+  dl("accessibility-conformance-report.md",m,"text/markdown");
+});
+
+document.getElementById("ex-html").addEventListener("click",()=>{
+  const r=rows(), c=counts();
+  const cell=s=>esc(s).replace(/\n/g,"<br>");
+  const style="body{font:15px/1.6 system-ui,sans-serif;max-width:960px;margin:40px auto;padding:0 20px;color:#16171a}"+
+    "table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14px}"+
+    "th,td{border:1px solid #ddd;padding:9px 11px;text-align:left;vertical-align:top}"+
+    "th{background:#f4f4f2;font-size:12px;text-transform:uppercase;letter-spacing:.05em}"+
+    "h1{font-size:26px}h2{font-size:18px;margin-top:32px;border-bottom:1px solid #ddd;padding-bottom:6px}"+
+    "td:nth-child(1){white-space:nowrap;font-family:ui-monospace,monospace;font-size:13px}"+
+    ".m{color:#555;font-size:14px}.f{color:#666;font-size:12px;margin-top:34px;border-top:1px solid #ddd;padding-top:14px}";
+  let h="<!doctype html><html lang=en><meta charset=utf-8><title>Accessibility Conformance Report</title>"+
+    "<style>"+style+"</style><h1>Accessibility Conformance Report</h1>"+
+    "<p class=m><b>Product:</b> "+esc(meta("name","(not stated)"))+"<br>"+
+    "<b>Version:</b> "+esc(meta("version","(not stated)"))+"<br>"+
+    "<b>Report date:</b> "+esc(meta("date","(not stated)"))+"<br>"+
+    "<b>Contact:</b> "+esc(meta("contact","(not stated)"))+"</p>"+
+    "<p class=m><b>Standard:</b> WCAG 2.1 Level AA, as referenced by EN 301 549 Chapter 9, the harmonised "+
+    "standard for the European Accessibility Act.</p>"+
+    "<h2>Scope</h2><p>"+cell(meta("scope","(not stated)"))+"</p>"+
+    "<h2>Evaluation methods</h2><p>"+cell(meta("method","(not stated)"))+"</p>"+
+    "<h2>Summary</h2><table><tr><th>Result</th><th>Criteria</th></tr>"+
+    "<tr><td>Supports</td><td>"+c.supports+"</td></tr>"+
+    "<tr><td>Partially Supports</td><td>"+c.partial+"</td></tr>"+
+    "<tr><td>Does Not Support</td><td>"+c.none+"</td></tr>"+
+    "<tr><td>Not Applicable</td><td>"+c.na+"</td></tr>"+
+    (c.unanswered?"<tr><td><b>Not Evaluated</b></td><td><b>"+c.unanswered+"</b></td></tr>":"")+
+    "</table><h2>WCAG 2.1 Level A and AA</h2><table>"+
+    "<tr><th>Criterion</th><th>Level</th><th>Conformance</th><th>Remarks and explanations</th></tr>";
+  r.forEach(x=>{ h+="<tr><td>"+esc(x.id)+"</td><td>"+x.level+"</td><td>"+esc(x.conf)+"</td><td>"+cell(x.remark)+"</td></tr>"; });
+  h+="</table><p class=f>VPAT® is a registered service mark of the Information Technology Industry "+
+     "Council. This report is not affiliated with or endorsed by ITI. Generated with ACR Builder.</p></html>";
+  dl("accessibility-conformance-report.html",h,"text/html");
+});
+
+document.getElementById("ex-json").addEventListener("click",()=>
+  dl("acr-working-file.json",JSON.stringify(state,null,2),"application/json"));
+document.getElementById("im-json").addEventListener("click",()=>document.getElementById("file").click());
+document.getElementById("file").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const d=JSON.parse(rd.result);
+      if(!d||typeof d!=="object"||!d.answers) throw 0;
+      state=d; save(); location.reload();
+    }catch(err){ alert("That doesn't look like an ACR Builder working file."); } };
+  rd.readAsText(f);
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("Clear the whole report? This cannot be undone.")){
+    localStorage.removeItem(KEY); location.reload();
+  }
+});
+
+refresh();
+})();
+</script>
+</body>
+</html>

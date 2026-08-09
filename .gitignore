@@ -1,0 +1,8 @@
+# Paid content — must never be published to a public repo.
+kit/
+dist/the-conformance-sprint/
+dist/*.zip
+
+node_modules/
+.playwright-mcp/
+*.log

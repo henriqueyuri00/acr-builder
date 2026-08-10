@@ -165,8 +165,9 @@ footer p{max-width:70ch}
   <div class="hero">
     <h1>Write an accessibility conformance report you can actually defend.</h1>
     <p>A customer's procurement team asked for your accessibility documentation. The official template is
-       free but blank, and a consultancy wants $1,850&ndash;$3,100 to fill it in. This walks you through all
-       50 WCAG&nbsp;2.1 Level&nbsp;A and AA success criteria and exports a clean report.</p>
+       free but blank, and a consultancy wants $1,850&ndash;$3,100 to fill it in. This walks you through every
+       Level&nbsp;A and AA success criterion &mdash; 50 under WCAG&nbsp;2.1, or 55 under WCAG&nbsp;2.2 &mdash;
+       and exports a clean report.</p>
     <div class="privacy">&#9679; Runs entirely in your browser. No account, no upload, no analytics.</div>
   </div>
 </div>
@@ -185,6 +186,14 @@ footer p{max-width:70ch}
     <div class="card">
       <h2>1. What you're reporting on</h2>
       <p class="sub">This header appears at the top of the exported report. Reviewers check it first.</p>
+
+      <label class="f" id="std-label">Standard to report against</label>
+      <div class="opts" role="group" aria-labelledby="std-label" style="margin-top:0">
+        <button type="button" class="opt" data-std="2.1" aria-pressed="true">WCAG 2.1 AA</button>
+        <button type="button" class="opt" data-std="2.2" aria-pressed="false">WCAG 2.2 AA</button>
+      </div>
+      <div class="flag warn" id="std-note" style="margin:0 0 20px"></div>
+
       <div class="grid">
         <div><label class="f" for="m-name">Product name</label><input type="text" id="m-name" data-meta="name" placeholder="Acme Analytics"></div>
         <div><label class="f" for="m-ver">Version</label><input type="text" id="m-ver" data-meta="version" placeholder="2026.8"></div>
@@ -258,9 +267,18 @@ const LEVELS=[
 let state = load();
 
 function load(){
-  try{ const r=JSON.parse(localStorage.getItem(KEY)); if(r&&r.answers) return r; }catch(e){}
-  return {meta:{}, answers:{}};
+  try{ const r=JSON.parse(localStorage.getItem(KEY)); if(r&&r.answers){ r.standard=r.standard||"2.1"; return r; } }catch(e){}
+  return {meta:{}, answers:{}, standard:"2.1"};
 }
+/* The active criteria set depends on the chosen standard. Answers for criteria
+   outside the set are kept in state, not deleted — switching back restores them. */
+function active(){ return criteriaFor(state.standard); }
+const STD = {
+  "2.1": { count:50, label:"WCAG 2.1 Level AA",
+           basis:"EN 301 549 v3.2.1 Chapter 9 — the harmonised standard currently referenced for the European Accessibility Act." },
+  "2.2": { count:55, label:"WCAG 2.2 Level AA",
+           basis:"EN 301 549 v4.1.1, which moves the baseline to WCAG 2.2 and is expected to be referenced in the EU Official Journal around October 2026. Until that reference is published, v3.2.1 and WCAG 2.1 AA remain the legal yardstick." }
+};
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function ans(id){ return state.answers[id] || {}; }
@@ -268,13 +286,14 @@ function ans(id){ return state.answers[id] || {}; }
 /* ---------- render criteria ---------- */
 const host=document.getElementById("criteria");
 const ORDER=["Perceivable","Operable","Understandable","Robust"];
-let html='<div class="card"><h2>2. Assess each criterion</h2><p class="sub">Fifty rows. You cannot skip '+
-         'them &mdash; an incomplete report is what gets sent back with questions.</p></div>';
+let html='<div class="card"><h2>2. Assess each criterion</h2><p class="sub">'+
+         STD[state.standard].count+' rows. You cannot skip them &mdash; an incomplete report is what '+
+         'gets sent back with questions.</p></div>';
 ORDER.forEach(p=>{
+  const inPrinciple = active().filter(c=>c.principle===p);
+  if(!inPrinciple.length) return;
   html+='<div class="principle"><h3>'+p+'</h3>';
-  CRITERIA.filter(c=>c.principle===p).forEach(c=>{
-    html+=renderCrit(c);
-  });
+  inPrinciple.forEach(c=>{ html+=renderCrit(c); });
   html+='</div>';
 });
 host.innerHTML=html;
@@ -363,13 +382,14 @@ document.querySelectorAll("[data-meta]").forEach(el=>{
 /* ---------- progress + summary ---------- */
 function counts(){
   const c={supports:0,partial:0,none:0,na:0,unanswered:0};
-  CRITERIA.forEach(x=>{ const l=ans(x.id).level; if(l) c[l]++; else c.unanswered++; });
+  active().forEach(x=>{ const l=ans(x.id).level; if(l) c[l]++; else c.unanswered++; });
   return c;
 }
 function refresh(){
-  const c=counts(), done=50-c.unanswered;
-  document.getElementById("fill").style.width=(done/50*100)+"%";
-  document.getElementById("count").textContent=done+" of 50 assessed";
+  const total=STD[state.standard].count;
+  const c=counts(), done=total-c.unanswered;
+  document.getElementById("fill").style.width=(done/total*100)+"%";
+  document.getElementById("count").textContent=done+" of "+total+" assessed";
   document.getElementById("tally").innerHTML=
     [["Supports",c.supports],["Partially",c.partial],["Does Not",c.none],["N/A",c.na],["Left",c.unanswered]]
     .map(([k,v])=>'<div class="t"><b>'+v+'</b><span>'+k+'</span></div>').join("");
@@ -377,12 +397,12 @@ function refresh(){
   const f=[];
   if(c.unanswered)
     f.push(["warn",c.unanswered+" criteria are still unassessed. A partial report tells a reviewer you didn't finish."]);
-  if(c.supports===50)
-    f.push(["err","Every one of the 50 criteria is marked Supports. Full conformance across an entire product is rare enough that experienced reviewers treat an all-Supports report as a sign the testing wasn't real. If it is genuinely true, your evaluation-methods section needs to prove it."]);
-  const naMissing=CRITERIA.filter(x=>ans(x.id).level==="na" && !x.na);
+  if(c.supports===total)
+    f.push(["err","Every one of the "+total+" criteria is marked Supports. Full conformance across an entire product is rare enough that experienced reviewers treat an all-Supports report as a sign the testing wasn't real. If it is genuinely true, your evaluation-methods section needs to prove it."]);
+  const naMissing=active().filter(x=>ans(x.id).level==="na" && !x.na);
   if(naMissing.length)
     f.push(["err",naMissing.length+" criteri"+(naMissing.length>1?"a are":"on is")+" marked Not Applicable that essentially always applies to a web product: "+naMissing.map(x=>x.id).join(", ")+"."]);
-  const noRemark=CRITERIA.filter(x=>{const a=ans(x.id); return (a.level==="partial"||a.level==="none") && (a.remark||"").trim().length<12;});
+  const noRemark=active().filter(x=>{const a=ans(x.id); return (a.level==="partial"||a.level==="none") && (a.remark||"").trim().length<12;});
   if(noRemark.length)
     f.push(["err",noRemark.length+" non-conforming criteri"+(noRemark.length>1?"a have":"on has")+" no remark explaining the defect: "+noRemark.map(x=>x.id).join(", ")+"."]);
   if(!(state.meta.method||"").trim())
@@ -397,7 +417,7 @@ function refresh(){
 }
 
 document.getElementById("jump").addEventListener("click",()=>{
-  const next=CRITERIA.find(c=>!ans(c.id).level);
+  const next=active().find(c=>!ans(c.id).level);
   if(!next) return;
   const el=document.getElementById("c-"+next.id);
   el.open=true; el.scrollIntoView({behavior:"smooth",block:"center"});
@@ -415,7 +435,7 @@ function dl(name,text,mime){
   setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
 function rows(){
-  return CRITERIA.map(c=>{
+  return active().map(c=>{
     const a=ans(c.id), lv=LEVELS.find(l=>l.k===a.level);
     return {id:c.id,name:c.name,level:c.level,
             conf:lv?lv.label:"Not Evaluated", remark:(a.remark||"").trim()};
@@ -430,8 +450,7 @@ document.getElementById("ex-md").addEventListener("click",()=>{
   m+="**Version:** "+meta("version","(not stated)")+"  \n";
   m+="**Report date:** "+meta("date","(not stated)")+"  \n";
   m+="**Contact:** "+meta("contact","(not stated)")+"\n\n";
-  m+="**Standard:** WCAG 2.1 Level AA, as referenced by EN 301 549 Chapter 9 "+
-     "(the harmonised standard for the European Accessibility Act).\n\n";
+  m+="**Standard:** "+STD[state.standard].label+". "+STD[state.standard].basis+"\n\n";
   m+="## Scope\n\n"+meta("scope","(not stated)")+"\n\n";
   m+="## Evaluation methods\n\n"+meta("method","(not stated)")+"\n\n";
   m+="## Summary\n\n";
@@ -439,7 +458,7 @@ document.getElementById("ex-md").addEventListener("click",()=>{
   m+="| Supports | "+c.supports+" |\n| Partially Supports | "+c.partial+" |\n";
   m+="| Does Not Support | "+c.none+" |\n| Not Applicable | "+c.na+" |\n";
   if(c.unanswered) m+="| **Not Evaluated** | **"+c.unanswered+"** |\n";
-  m+="\n## WCAG 2.1 Level A and AA\n\n";
+  m+="\n## "+STD[state.standard].label.replace(" Level AA"," Level A and AA")+"\n\n";
   m+="| Criterion | Level | Conformance | Remarks |\n|---|---|---|---|\n";
   r.forEach(x=>{ m+="| "+x.id+" "+x.name+" | "+x.level+" | "+x.conf+" | "+
     (x.remark? x.remark.replace(/\|/g,"\\|").replace(/\n+/g," ") : "") + " |\n"; });
@@ -464,8 +483,7 @@ document.getElementById("ex-html").addEventListener("click",()=>{
     "<b>Version:</b> "+esc(meta("version","(not stated)"))+"<br>"+
     "<b>Report date:</b> "+esc(meta("date","(not stated)"))+"<br>"+
     "<b>Contact:</b> "+esc(meta("contact","(not stated)"))+"</p>"+
-    "<p class=m><b>Standard:</b> WCAG 2.1 Level AA, as referenced by EN 301 549 Chapter 9, the harmonised "+
-    "standard for the European Accessibility Act.</p>"+
+    "<p class=m><b>Standard:</b> "+esc(STD[state.standard].label)+". "+esc(STD[state.standard].basis)+"</p>"+
     "<h2>Scope</h2><p>"+cell(meta("scope","(not stated)"))+"</p>"+
     "<h2>Evaluation methods</h2><p>"+cell(meta("method","(not stated)"))+"</p>"+
     "<h2>Summary</h2><table><tr><th>Result</th><th>Criteria</th></tr>"+
@@ -474,7 +492,7 @@ document.getElementById("ex-html").addEventListener("click",()=>{
     "<tr><td>Does Not Support</td><td>"+c.none+"</td></tr>"+
     "<tr><td>Not Applicable</td><td>"+c.na+"</td></tr>"+
     (c.unanswered?"<tr><td><b>Not Evaluated</b></td><td><b>"+c.unanswered+"</b></td></tr>":"")+
-    "</table><h2>WCAG 2.1 Level A and AA</h2><table>"+
+    "</table><h2>"+esc(STD[state.standard].label.replace(" Level AA"," Level A and AA"))+"</h2><table>"+
     "<tr><th>Criterion</th><th>Level</th><th>Conformance</th><th>Remarks and explanations</th></tr>";
   r.forEach(x=>{ h+="<tr><td>"+esc(x.id)+"</td><td>"+x.level+"</td><td>"+esc(x.conf)+"</td><td>"+cell(x.remark)+"</td></tr>"; });
   h+="</table><p class=f>VPAT® is a registered service mark of the Information Technology Industry "+
@@ -500,6 +518,21 @@ document.getElementById("reset").addEventListener("click",()=>{
     localStorage.removeItem(KEY); location.reload();
   }
 });
+
+/* Standard selector. Switching changes which criteria exist, so we re-render by
+   reloading — state is already persisted and answers for criteria outside the
+   chosen set are kept, so switching back restores them. */
+function paintStandard(){
+  document.querySelectorAll("[data-std]").forEach(b=>
+    b.setAttribute("aria-pressed", String(b.dataset.std===state.standard)));
+  document.getElementById("std-note").innerHTML =
+    '<span>&#9888;</span><div>'+esc(STD[state.standard].basis)+'</div>';
+}
+document.querySelectorAll("[data-std]").forEach(b=>b.addEventListener("click",()=>{
+  if(b.dataset.std===state.standard) return;
+  state.standard=b.dataset.std; save(); location.reload();
+}));
+paintStandard();
 
 refresh();
 })();

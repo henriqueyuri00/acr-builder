@@ -25,16 +25,19 @@ if (/<\/script/i.test(js)) {
 const out = html.replace(TAG, '<script>\n' + js + '\n</script>');
 
 // Verify: the criteria data must survive the inline intact.
+// The file carries the union of both standards — 56 entries, from which
+// WCAG 2.1 draws 50 and WCAG 2.2 draws 55 (2.1 minus 4.1.1, plus six new).
 const ids = [...out.matchAll(/id:\s*"(\d+\.\d+\.\d+)"/g)].map(m => m[1]);
 const levelA  = [...out.matchAll(/level:\s*"A"/g)].length;
 const levelAA = [...out.matchAll(/level:\s*"AA"/g)].length;
 
 const problems = [];
-if (ids.length !== 50)  problems.push(`expected 50 criteria, inlined ${ids.length}`);
-if (levelA !== 30)      problems.push(`expected 30 Level A, got ${levelA}`);
-if (levelAA !== 20)     problems.push(`expected 20 Level AA, got ${levelAA}`);
+if (ids.length !== 56)  problems.push(`expected 56 criteria entries, inlined ${ids.length}`);
+if (levelA !== 32)      problems.push(`expected 32 Level A entries, got ${levelA}`);
+if (levelAA !== 24)     problems.push(`expected 24 Level AA entries, got ${levelAA}`);
 if (new Set(ids).size !== ids.length) problems.push('duplicate criterion ids after inline');
 if (out.includes(TAG))  problems.push('external script tag still present');
+if (!/function criteriaFor/.test(out)) problems.push('criteriaFor() missing from the inlined build');
 
 if (problems.length) {
   console.error('FAIL:\n  ' + problems.join('\n  '));

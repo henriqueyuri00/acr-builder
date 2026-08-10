@@ -278,6 +278,27 @@ const CRITERIA = [
     fail: "The single most common deliberate accessibility failure on the web: a global *:focus { outline: none } to make the design look tidy. Use :focus-visible instead of removing the indicator.",
     na: null
   },
+  {
+    id: "2.4.11", name: "Focus Not Obscured (Minimum)", level: "AA", principle: "Operable", wcag: ["2.2"],
+    what: "When an element receives keyboard focus, it must not be entirely hidden by content the author added.",
+    ask: "Can a keyboard user still see the thing they just tabbed to?",
+    fail: "Sticky headers and footers that cover the focused control as you tab down the page. Cookie banners and chat widgets parked over the bottom of the viewport. The element still has focus — you just can't see it.",
+    na: null
+  },
+  {
+    id: "2.5.7", name: "Dragging Movements", level: "AA", principle: "Operable", wcag: ["2.2"],
+    what: "Anything operated by dragging must also work with a single pointer without dragging, unless dragging is essential.",
+    ask: "Can someone who cannot drag still reorder your list?",
+    fail: "Kanban boards, reorderable lists and range sliders built drag-only. The fix is usually a pair of move buttons or a number input, not a rewrite.",
+    na: "The product has no drag-operated functionality."
+  },
+  {
+    id: "2.5.8", name: "Target Size (Minimum)", level: "AA", principle: "Operable", wcag: ["2.2"],
+    what: "Pointer targets must be at least 24 by 24 CSS pixels, with exceptions for sufficiently spaced, inline, or essential targets.",
+    ask: "Can someone with an imprecise pointer hit your controls?",
+    fail: "Icon-only buttons drawn at 16px, densely packed row actions in data tables, and small close buttons on modals and toasts.",
+    na: null
+  },
 
   /* ---------------------------------------------------------------- 3. Understandable */
   {
@@ -344,6 +365,27 @@ const CRITERIA = [
     na: null
   },
   {
+    id: "3.2.6", name: "Consistent Help", level: "A", principle: "Understandable", wcag: ["2.2"],
+    what: "If a help mechanism is repeated across pages, it must appear in the same relative order each time.",
+    ask: "Is your support link in the same place on every page?",
+    fail: "A contact or support widget that sits in the header on marketing pages and in the footer inside the app. Note this only applies to help you already offer — it does not require you to add any.",
+    na: "The product provides no help mechanism at all — no contact details, no support link, no chat, no self-help."
+  },
+  {
+    id: "3.3.7", name: "Redundant Entry", level: "A", principle: "Understandable", wcag: ["2.2"],
+    what: "Information the user already entered in the same process must be auto-populated or offered for selection, unless re-entering it is essential.",
+    ask: "Are you making people type the same thing twice?",
+    fail: "Multi-step checkout that asks for the address again at confirmation. Forms that discard what was typed when validation fails. Re-entry is only essential where it is the point, such as confirming a new password.",
+    na: null
+  },
+  {
+    id: "3.3.8", name: "Accessible Authentication (Minimum)", level: "AA", principle: "Understandable", wcag: ["2.2"],
+    what: "Logging in must not depend on a cognitive function test — remembering a password, solving a puzzle, transcribing characters — unless an alternative or an assisting mechanism exists.",
+    ask: "Can someone authenticate without relying on memory or puzzle-solving?",
+    fail: "Blocking paste in the password field, which breaks password managers and turns login into a memory test. CAPTCHAs requiring transcription or object recognition with no alternative. Supporting paste and WebAuthn is usually the whole fix.",
+    na: null
+  },
+  {
     id: "3.3.4", name: "Error Prevention (Legal, Financial, Data)", level: "AA", principle: "Understandable",
     what: "For legal commitments, financial transactions and data deletion, submissions must be reversible, checked or confirmable.",
     ask: "Can a user undo or review before they're committed?",
@@ -353,7 +395,7 @@ const CRITERIA = [
 
   /* ---------------------------------------------------------------- 4. Robust */
   {
-    id: "4.1.1", name: "Parsing", level: "A", principle: "Robust",
+    id: "4.1.1", name: "Parsing", level: "A", principle: "Robust", wcag: ["2.1"],
     what: "Elements must have complete tags, be properly nested, and have unique IDs.",
     ask: "Is your markup well-formed enough for assistive tech to parse?",
     fail: "Duplicate id attributes from repeated components — the classic React failure where a list renders the same id on every row, breaking every label and aria-describedby that points at it.",
@@ -375,12 +417,25 @@ const CRITERIA = [
   }
 ];
 
-/* Integrity guard: the set is normatively fixed at 30 Level A + 20 Level AA.
-   If these numbers ever drift, the report this tool generates is wrong. */
-const _A  = CRITERIA.filter(c => c.level === "A").length;
-const _AA = CRITERIA.filter(c => c.level === "AA").length;
-if (_A !== 30 || _AA !== 20) {
-  throw new Error(`Criteria set corrupt: expected 30 A / 20 AA, got ${_A} A / ${_AA} AA`);
+/* A criterion with no `wcag` field is in both 2.1 and 2.2. Only the exceptions
+   carry it: 4.1.1 Parsing (removed in 2.2) and the six criteria 2.2 introduced
+   at A/AA. */
+function criteriaFor(version) {
+  return CRITERIA.filter(c => !c.wcag || c.wcag.includes(version));
 }
 
-if (typeof module !== "undefined" && module.exports) module.exports = { CRITERIA };
+/* Integrity guard. These counts are normative — if they drift, every report
+   this tool generates is wrong, which is worse than the tool not existing.
+     WCAG 2.1 A/AA: 30 A + 20 AA = 50
+     WCAG 2.2 A/AA: 31 A + 24 AA = 55  (2.1, minus 4.1.1, plus six new)      */
+[["2.1", 30, 20], ["2.2", 31, 24]].forEach(([version, expectA, expectAA]) => {
+  const set = criteriaFor(version);
+  const a  = set.filter(c => c.level === "A").length;
+  const aa = set.filter(c => c.level === "AA").length;
+  if (a !== expectA || aa !== expectAA) {
+    throw new Error(
+      `Criteria set corrupt for WCAG ${version}: expected ${expectA} A / ${expectAA} AA, got ${a} A / ${aa} AA`);
+  }
+});
+
+if (typeof module !== "undefined" && module.exports) module.exports = { CRITERIA, criteriaFor };

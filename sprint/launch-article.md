@@ -157,9 +157,9 @@ not a certificate.
 
 ---
 
-*I found this while building a free, offline
-[ACR Builder](https://github.com/) — a client-side tool that walks the 50 WCAG 2.1 A/AA
-success criteria and exports a conformance report, for teams whose enterprise customers
-have started asking for accessibility documentation. Auditing it against itself turned up
-five real defects, this being the most embarrassing. MIT licensed, no signup, nothing
-leaves your browser.*
+*I found this while building [ACR Builder](https://henriqueyuri00.github.io/acr-builder/)
+— a free, offline, client-side tool that walks the 50 WCAG 2.1 A/AA success criteria and
+exports a conformance report, for teams whose enterprise customers have started asking for
+accessibility documentation. Auditing it against itself turned up five real defects, this
+being the most embarrassing. MIT licensed, no signup, nothing leaves your browser.
+[Source](https://github.com/henriqueyuri00/acr-builder).*

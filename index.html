@@ -257,9 +257,10 @@ footer p{max-width:70ch}
     <p style="margin-top:12px"><b>This is not an accessibility overlay.</b> Overlay widgets that promise
     instant compliance do not produce conformance, and buyers' accessibility teams increasingly treat them
     as a negative signal. There is no way to do this without testing your product.</p>
-    <p style="margin-top:12px"><b>Fixing what you find.</b> Documenting a defect and remediating it are
-    different jobs. <a href="sprint/">The Accessibility Sprint</a> is a paid five-day plan for the second
-    one, written against these same success criteria. This builder does not require it and never expires.</p>
+    <p style="margin-top:12px"><b>Knowing whether the claim holds.</b> Recording a judgement and being
+    able to defend it are different jobs. <a href="sprint/">The Conformance Sprint</a> is a paid
+    three-day testing protocol for the second one, written against these same success criteria.
+    This builder does not require it and never expires.</p>
     <p class="legal">VPAT&reg; is a registered service mark of the Information Technology Industry Council
     (ITI). This tool is not affiliated with or endorsed by ITI, and does not reproduce or modify their
     template &mdash; it produces an Accessibility Conformance Report from the underlying WCAG&nbsp;2.1
@@ -437,11 +438,11 @@ function refresh(){
   const defects=c.partial+c.none;
   document.getElementById("next").innerHTML = defects===0 ? "" :
     '<div class="next"><h3>You now have '+defects+' criteri'+(defects>1?"a":"on")+' to remediate</h3>'+
-    '<p>This builder documents where you stand. It does not tell you what order to fix things in, '+
-    'how to re-test, or how to word a remediation date you can actually hold to. '+
-    '<b>The Accessibility Sprint</b> is a paid, five-day plan for exactly that work &mdash; '+
+    '<p>This builder records where you stand. It cannot tell you whether the claim behind each row '+
+    'holds up, which is the part a reviewer will actually press on. '+
+    '<b>The Conformance Sprint</b> is a paid three-day testing protocol for exactly that &mdash; '+
     'written against these same success criteria.</p>'+
-    '<a class="btn" href="sprint/">See what the sprint covers</a>'+
+    '<a class="btn" href="sprint/">See what the sprint covers &mdash; $49</a>'+
     '<p class="why">The builder stays free and MIT-licensed either way. '+
     'If you already know your remediation order, you do not need it.</p></div>';
 }

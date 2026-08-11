@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does the European Accessibility Act apply to you? Three questions that decide it.</title>
+<meta name="description" content="Which products and services the EAA covers, the microenterprise exemption in precise terms, why enforcement being national changes what you should read, and the reason a procurement questionnaire binds you even when the law does not.">
+<link rel="canonical" href="https://henriqueyuri00.github.io/acr-builder/eaa/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://henriqueyuri00.github.io/acr-builder/eaa/">
+<meta property="og:title" content="Does the European Accessibility Act apply to you?">
+<meta property="og:description" content="Three questions decide it: is your product or service in scope, do you offer it to EU consumers, and are you a microenterprise. Plain answers, including the one that says no.">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Does the European Accessibility Act apply to you? Three questions that decide it.",
+  "url": "https://henriqueyuri00.github.io/acr-builder/eaa/",
+  "description": "Scope of the European Accessibility Act, the microenterprise exemption, and why national transposition is the text that actually binds you.",
+  "author": { "@type": "Person", "name": "Henrique Yuri" },
+  "about": ["European Accessibility Act", "Directive (EU) 2019/882", "EN 301 549", "WCAG", "accessibility compliance"]
+}
+</script>
+<style>
+  :root{
+    --bg:#fbfbfa; --panel:#fff; --ink:#16171a; --muted:#5f6470; --line:#e4e4e2;
+    --accent:#1c5d3f; --accent-soft:#e8f1ec; --on-accent:#fff;
+    --warn:#8a5a1b; --warn-soft:#fbf3e6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme=light]){
+      --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+      --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+      --warn:#e3b169; --warn-soft:#2e2415;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  a{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:60;background:var(--accent);color:var(--on-accent);
+        padding:10px 16px;border-radius:0 0 8px 8px;text-decoration:none}
+  .skip:focus{top:0}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:16px;
+       padding:18px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .top a{text-decoration:none}
+  header.hero{padding:48px 0 6px}
+  h1{font-size:clamp(26px,4.4vw,36px);line-height:1.22;margin:0 0 16px;letter-spacing:-.02em}
+  .lede{font-size:18px;color:var(--muted);margin:0}
+  h2{font-size:21px;margin:44px 0 10px;letter-spacing:-.01em}
+  h3{font-size:16.5px;margin:26px 0 6px}
+  p,li{max-width:68ch}
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .q{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+     border-radius:0 10px 10px 0;padding:18px 20px;margin:20px 0}
+  .q h3{margin:0 0 8px;font-size:17px}
+  .q p:last-child{margin-bottom:0}
+  .tw{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:10px;margin:18px 0}
+  .tw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:14.5px}
+  th,td{padding:10px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  thead th{background:var(--panel);font-size:12.5px;text-transform:uppercase;
+           letter-spacing:.05em;color:var(--muted)}
+  tbody th{font-weight:620}
+  .callout{background:var(--accent-soft);border-radius:10px;padding:17px 19px;margin:22px 0}
+  .callout p{margin:0}
+  .callout p + p{margin-top:10px}
+  .warn{background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 10px 10px 0;
+        padding:15px 18px;margin:22px 0}
+  .warn p{margin:0}
+  .warn p + p{margin-top:10px}
+  .next{margin:34px 0;padding:20px 22px;border:1px solid var(--line);border-left:3px solid var(--accent);
+        border-radius:10px;background:var(--panel)}
+  .next h3{margin-top:0}
+  .btn{display:inline-block;background:var(--accent);color:var(--on-accent);text-decoration:none;
+       padding:11px 19px;border-radius:9px;font-weight:580;font-size:14.5px;margin-top:6px}
+  .btn:hover{filter:brightness(1.08)}
+  code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px}
+  footer{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line);
+         color:var(--muted);font-size:13.5px}
+  .legal{font-size:12.5px;margin-top:14px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+  <nav class="top" aria-label="Site">
+    <a href="../"><strong>ACR Builder</strong></a>
+    <a href="../vpat/">What a VPAT is</a>
+  </nav>
+
+  <header class="hero">
+    <h1>Does the European Accessibility Act apply to you?</h1>
+    <p class="lede">Three questions settle it. Most pages on this subject are written by people who
+    would like the answer to be yes; a large number of companies are genuinely out of scope, and this
+    says so.</p>
+  </header>
+
+  <main id="main">
+    <p>The Act is <strong>Directive (EU) 2019/882</strong>. It has applied since
+    <strong>28 June 2025</strong>. It is a directive, not a regulation, which matters more than it
+    sounds and is dealt with near the end.</p>
+
+    <div class="q">
+      <h3>Question 1 &mdash; is what you sell on the list?</h3>
+      <p>The Act does not cover the economy. It names specific products and services.</p>
+    </div>
+
+    <div class="tw" tabindex="0" role="region" aria-label="What the European Accessibility Act covers">
+      <table>
+        <thead><tr><th scope="col">Services</th><th scope="col">Products</th></tr></thead>
+        <tbody>
+          <tr>
+            <th scope="row">E-commerce</th>
+            <td>Computers and operating systems</td>
+          </tr>
+          <tr>
+            <th scope="row">Consumer banking</th>
+            <td>Payment terminals and ATMs</td>
+          </tr>
+          <tr>
+            <th scope="row">E-books and dedicated software</th>
+            <td>Ticketing and check-in machines</td>
+          </tr>
+          <tr>
+            <th scope="row">Electronic communications</th>
+            <td>Smartphones and similar</td>
+          </tr>
+          <tr>
+            <th scope="row">Access to audiovisual media services</th>
+            <td>TVs and set-top boxes with internet</td>
+          </tr>
+          <tr>
+            <th scope="row">Air, bus, rail and waterborne passenger transport</th>
+            <td>E-readers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>If you sell B2B software that is none of these, the Act does not reach you directly. Read on
+    anyway, because the last section is the one that will actually cost you time.</p>
+
+    <div class="q">
+      <h3>Question 2 &mdash; do you offer it to consumers in the EU?</h3>
+      <p>The obligation follows the market, not the head office. A company based outside the EU that
+      sells a covered service to EU consumers is in scope; an EU company selling only to businesses is
+      not, because the Act is about consumer-facing provision.</p>
+    </div>
+
+    <div class="q">
+      <h3>Question 3 &mdash; are you a microenterprise providing a service?</h3>
+      <p>If so, you are exempt from the service requirements. The definition is precise and both parts
+      must hold:</p>
+      <p><strong>Fewer than 10 people</strong>, <em>and</em> an annual turnover or balance sheet total
+      <strong>not exceeding &euro;2 million</strong>.</p>
+    </div>
+
+    <div class="warn">
+      <p><strong>The exemption covers services, not products.</strong> If you manufacture, import or
+      distribute a covered product, being small does not exempt you.</p>
+      <p>There is also no grace period built into it. Cross either threshold and the exemption stops
+      applying.</p>
+    </div>
+
+    <h2>What "accessible" means here</h2>
+    <p>The Act itself states functional requirements rather than a technical specification: information
+    must be perceivable, operable, understandable and robust, and provided through more than one
+    sensory channel. Annex&nbsp;I sets those out.</p>
+    <p>For anything on the web, the practical target is <strong>EN&nbsp;301&nbsp;549</strong>, the
+    European standard for ICT accessibility, whose web chapter adopts <strong>WCAG Level A and
+    AA</strong> directly. If you are working to WCAG 2.1 AA you are working to the substance of what
+    the Act asks for.</p>
+    <p>You will see claims that meeting a standard guarantees compliance. Conformity with a
+    <em>harmonised</em> standard cited in the Official Journal creates a presumption of conformity,
+    which is a legal term of art and not the same as immunity. Check which version is currently cited
+    before relying on it.</p>
+
+    <h2>Why "directive, not regulation" matters</h2>
+    <p>A regulation applies as written across the EU. A directive is transposed into each member
+    state's own law, and <strong>the national text is what binds you</strong>. Consequences of this
+    worth knowing:</p>
+    <ul>
+      <li><strong>Penalties are national and vary enormously.</strong> Published figures differ by
+      more than an order of magnitude between member states, and some regimes carry non-financial
+      sanctions &mdash; market withdrawal, restrictions on providing the service, and in at least one
+      state criminal liability. Any single number quoted as "the EAA fine" is wrong.</li>
+      <li><strong>Enforcement is decentralised.</strong> Each state designates its own authorities,
+      with different ones for products and for services.</li>
+      <li><strong>Deadlines and transitional arrangements can differ</strong> in the detail of the
+      national text.</li>
+    </ul>
+    <div class="callout">
+      <p>So the document to read is not the directive. It is your own country's transposition of it,
+      and any secondary source &mdash; this page included &mdash; is a starting point rather than an
+      answer.</p>
+    </div>
+
+    <h2>The part that catches people who are exempt</h2>
+    <p>Say you are a six-person SaaS company under &euro;2m turnover. The Act very likely does not
+    bind you as a service provider.</p>
+    <p>Then a customer's procurement questionnaire asks for your accessibility conformance report,
+    with a deadline.</p>
+    <p>That request is not enforcement of the Act. It is a buyer who <em>is</em> covered &mdash; or who
+    sells to a public body that is &mdash; managing their own obligation by pushing it down the supply
+    chain. It arrives as a contract term, and <strong>no regulatory exemption touches a contract term</strong>.
+    In practice this reaches far more small vendors than the Act itself does.</p>
+
+    <div class="next">
+      <h3>If you need to answer one of those questionnaires</h3>
+      <p>The <strong>ACR Builder</strong> walks the WCAG 2.1 and 2.2 Level A and AA success criteria
+      &mdash; the same ones EN&nbsp;301&nbsp;549 Chapter&nbsp;9 adopts &mdash; records your judgement
+      on each, and exports a report you can send. Free, MIT, runs entirely in your browser, no account
+      and no upload.</p>
+      <a class="btn" href="../">Open the builder</a>
+      <p style="margin-top:16px;font-size:14px;color:var(--muted)">Not sure what the questionnaire is
+      asking for? <a href="../vpat/">What a customer actually means when they ask for your VPAT</a>.</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>Written because most of what is published about this Act is a lead magnet for an audit or an
+    overlay, and the honest answer for a lot of readers is that it does not apply to them.</p>
+    <p class="legal">Not legal advice. The binding text is your member state's transposition of
+    Directive (EU) 2019/882, and scope questions at the margin are worth asking a lawyer about.</p>
+  </footer>
+</div>
+</body>
+</html>

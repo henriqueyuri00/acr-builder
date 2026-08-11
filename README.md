@@ -18,6 +18,23 @@ Accessibility Act — and exports a clean report as HTML or Markdown.
 **[→ Open the builder](https://henriqueyuri00.github.io/acr-builder/)** · or download
 [`acr-builder.html`](dist/acr-builder.html) and open it from your filesystem.
 
+## If you are not sure what you have been asked for
+
+Three plain-English reference pages, written because most of what is published on these
+topics is a lead magnet for an audit or an overlay:
+
+- **[What a customer actually means when they ask for your VPAT](https://henriqueyuri00.github.io/acr-builder/vpat/)**
+  — the template is not the report, which of the four VPAT 2.5 editions applies, and the
+  column reviewers read first.
+- **[Does the European Accessibility Act apply to you?](https://henriqueyuri00.github.io/acr-builder/eaa/)**
+  — three questions decide it, and for many small vendors the answer is no. The section
+  that catches them is the last one: an exemption from the regulation is not an exemption
+  from a customer's procurement questionnaire.
+- **[The accessibility statement has to be true](https://henriqueyuri00.github.io/acr-builder/statement/)**
+  — Commission Implementing Decision (EU) 2018/1523 requires the declaration to be accurate
+  and based on an actual evaluation, which is the requirement a generator cannot satisfy
+  for you.
+
 ## Why another one
 
 Most tools in this space will happily generate a beautiful report full of "Supports"

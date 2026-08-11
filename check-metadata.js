@@ -9,6 +9,7 @@ const PAGES = [
   { file: 'sprint/index.html', canonical: 'https://henriqueyuri00.github.io/acr-builder/sprint/' },
   { file: 'vpat/index.html',   canonical: 'https://henriqueyuri00.github.io/acr-builder/vpat/' },
   { file: 'eaa/index.html',    canonical: 'https://henriqueyuri00.github.io/acr-builder/eaa/' },
+  { file: 'statement/index.html', canonical: 'https://henriqueyuri00.github.io/acr-builder/statement/' },
 ];
 
 let failures = 0;

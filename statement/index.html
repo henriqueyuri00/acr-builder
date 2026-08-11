@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The accessibility statement has to be true. That is the hard part.</title>
+<meta name="description" content="What an accessibility statement must contain, the two different EU obligations people confuse, and why the law requires the claim to be based on an actual evaluation — which is exactly what a generator cannot give you.">
+<link rel="canonical" href="https://henriqueyuri00.github.io/acr-builder/statement/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://henriqueyuri00.github.io/acr-builder/statement/">
+<meta property="og:title" content="The accessibility statement has to be true. That is the hard part.">
+<meta property="og:description" content="The model statement, the three compliance statuses, and the requirement most generators quietly fail: the declaration must be accurate and based on an actual evaluation.">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "The accessibility statement has to be true. That is the hard part.",
+  "url": "https://henriqueyuri00.github.io/acr-builder/statement/",
+  "description": "What an accessibility statement must contain under the model in Commission Implementing Decision (EU) 2018/1523, and why the accuracy requirement is the part that costs work.",
+  "author": { "@type": "Person", "name": "Henrique Yuri" },
+  "about": ["accessibility statement", "Directive (EU) 2016/2102", "Commission Implementing Decision (EU) 2018/1523", "European Accessibility Act", "EN 301 549"]
+}
+</script>
+<style>
+  :root{
+    --bg:#fbfbfa; --panel:#fff; --ink:#16171a; --muted:#5f6470; --line:#e4e4e2;
+    --accent:#1c5d3f; --accent-soft:#e8f1ec; --on-accent:#fff;
+    --warn:#8a5a1b; --warn-soft:#fbf3e6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme=light]){
+      --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+      --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+      --warn:#e3b169; --warn-soft:#2e2415;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  a{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:60;background:var(--accent);color:var(--on-accent);
+        padding:10px 16px;border-radius:0 0 8px 8px;text-decoration:none}
+  .skip:focus{top:0}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:16px;
+       padding:18px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .top a{text-decoration:none}
+  header.hero{padding:48px 0 6px}
+  h1{font-size:clamp(26px,4.4vw,36px);line-height:1.22;margin:0 0 16px;letter-spacing:-.02em}
+  .lede{font-size:18px;color:var(--muted);margin:0}
+  h2{font-size:21px;margin:44px 0 10px;letter-spacing:-.01em}
+  h3{font-size:16.5px;margin:26px 0 6px}
+  p,li{max-width:68ch}
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .tw{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:10px;margin:18px 0}
+  .tw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  table{border-collapse:collapse;width:100%;min-width:540px;font-size:14.5px}
+  th,td{padding:10px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  thead th{background:var(--panel);font-size:12.5px;text-transform:uppercase;
+           letter-spacing:.05em;color:var(--muted)}
+  tbody th{font-weight:620;white-space:nowrap}
+  .callout{background:var(--accent-soft);border-radius:10px;padding:17px 19px;margin:22px 0}
+  .callout p{margin:0}
+  .callout p + p{margin-top:10px}
+  .warn{background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 10px 10px 0;
+        padding:15px 18px;margin:22px 0}
+  .warn p{margin:0}
+  .warn p + p{margin-top:10px}
+  .quote{border-left:3px solid var(--line);padding:2px 0 2px 18px;margin:20px 0;color:var(--muted)}
+  .quote p{margin:0}
+  .next{margin:34px 0;padding:20px 22px;border:1px solid var(--line);border-left:3px solid var(--accent);
+        border-radius:10px;background:var(--panel)}
+  .next h3{margin-top:0}
+  .btn{display:inline-block;background:var(--accent);color:var(--on-accent);text-decoration:none;
+       padding:11px 19px;border-radius:9px;font-weight:580;font-size:14.5px;margin-top:6px}
+  .btn:hover{filter:brightness(1.08)}
+  code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px}
+  footer{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line);
+         color:var(--muted);font-size:13.5px}
+  .legal{font-size:12.5px;margin-top:14px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+  <nav class="top" aria-label="Site">
+    <a href="../"><strong>ACR Builder</strong></a>
+    <a href="../eaa/">Does the EAA apply to you?</a>
+  </nav>
+
+  <header class="hero">
+    <h1>The accessibility statement has to be true. That is the hard part.</h1>
+    <p class="lede">Generating the document takes ten minutes and there are free tools for it,
+    including an official one. The requirement that costs work is buried in the middle: the
+    declaration must be <em>accurate</em>, and based on an evaluation you actually did.</p>
+  </header>
+
+  <main id="main">
+    <h2>Two different obligations, routinely confused</h2>
+    <p>People say "accessibility statement" about two separate things. Getting them mixed up leads to
+    publishing the wrong document under the wrong rules.</p>
+
+    <div class="tw" tabindex="0" role="region" aria-label="Two accessibility statement obligations">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col">Public sector statement</th><th scope="col">EAA accessibility information</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Comes from</th>
+              <td>Directive (EU) 2016/2102, the Web Accessibility Directive</td>
+              <td>Directive (EU) 2019/882, the European Accessibility Act</td></tr>
+          <tr><th scope="row">Who</th>
+              <td>Public sector bodies</td>
+              <td>Providers of covered services to EU consumers</td></tr>
+          <tr><th scope="row">Form</th>
+              <td>A prescribed model &mdash; Commission Implementing Decision (EU) 2018/1523</td>
+              <td>Information about how the service meets the requirements; no single EU-wide template</td></tr>
+          <tr><th scope="row">Enforcement</th>
+              <td>National monitoring bodies, with a complaints procedure</td>
+              <td>National market surveillance and service authorities</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The rest of this page is about the first one, because it is the one with a prescribed shape.
+    If you are a private company under the EAA, the model is still the best available guide to what a
+    reader expects to find.</p>
+
+    <h2>What the model statement contains</h2>
+    <p>The model in Decision 2018/1523 is short, and every part of it is there for a reason:</p>
+    <ul>
+      <li><strong>A compliance status</strong> &mdash; fully, partially, or not compliant with the
+      applicable standard.</li>
+      <li><strong>The non-accessible content, listed</strong>, with the reason for each: a failure to
+      comply, a disproportionate-burden claim, or content outside the directive's scope.</li>
+      <li><strong>Accessible alternatives</strong>, where they exist.</li>
+      <li><strong>A feedback mechanism</strong> so a user can report a barrier or request content that
+      is excluded.</li>
+      <li><strong>A link to the enforcement procedure</strong> to use if the response is inadequate.</li>
+      <li><strong>The date it was prepared or last reviewed</strong>, and the method used to evaluate.</li>
+    </ul>
+
+    <div class="callout">
+      <p>Notice what dominates that list. Four of the six items are about <em>what is wrong and what
+      the user can do about it</em>. The statement is not a badge. It is a disclosure document, and it
+      is designed to be most useful when the answer is "partially compliant".</p>
+    </div>
+
+    <h2>The requirement generators cannot satisfy for you</h2>
+    <p>Decision 2018/1523 does not only prescribe the shape. It requires that the declarations about
+    compliance</p>
+    <div class="quote">
+      <p>&hellip; are accurate and based on &hellip; an actual evaluation of the website's or mobile
+      application's compliance with the requirements.</p>
+    </div>
+    <p>So a statement is not a formality you generate and publish. It is a claim about your product,
+    and the law asks what the claim rests on.</p>
+
+    <div class="warn">
+      <p><strong>The failure mode is specific and common:</strong> a generator asks a few questions,
+      you pick "fully compliant" because nothing obviously looks broken, and you publish a claim you
+      have never tested. That statement is worse than no statement &mdash; it is a documented,
+      dated, public assertion that is not true, made by the organisation it is about.</p>
+      <p>"Partially compliant", with an honest list of what fails and a date for fixing it, is a
+      normal and respectable answer. It is what the model was built to express.</p>
+    </div>
+
+    <h2>What counts as an actual evaluation</h2>
+    <p>For anything on the web, the substance is <strong>EN&nbsp;301&nbsp;549</strong>, whose web
+    chapter adopts <strong>WCAG Level A and AA</strong>. An evaluation means going through those
+    success criteria against your product and recording what you found &mdash; which is the same
+    exercise as filling in an accessibility conformance report, done for a different audience.</p>
+    <p>Automated scanning is a part of it and not the whole. axe-core detects around
+    <a href="https://www.deque.com/blog/automated-testing-study-identifies-57-percent-of-digital-accessibility-issues/">57% of issues by volume</a>
+    and roughly a third of the success criteria; the ones that fail most often in real audits &mdash;
+    info and relationships, name/role/value, focus visibility, keyboard operation &mdash; are largely
+    the ones no scanner can judge. A statement whose stated evaluation method is "we ran a scanner"
+    is disclosing that too.</p>
+
+    <div class="warn">
+      <p><strong>An overlay does not change your compliance status.</strong> It changes what a visitor
+      sees, not what an evaluation finds, and a statement that credits one is claiming something the
+      underlying pages do not support.</p>
+    </div>
+
+    <h2>Keeping it true afterwards</h2>
+    <p>The statement carries a date because it is expected to go stale. A product ships, a component
+    changes, and the document on your site still describes last year's build. The model asks for a
+    review date for exactly this reason, and reviewing it is cheaper than the alternative: the
+    statement is the one place where an organisation writes down, publicly and under its own name,
+    what it believes about its own accessibility.</p>
+
+    <div class="next">
+      <h3>Do the evaluation first</h3>
+      <p>The <strong>ACR Builder</strong> walks the WCAG 2.1 and 2.2 Level A and AA success criteria
+      &mdash; the same ones EN&nbsp;301&nbsp;549 Chapter&nbsp;9 adopts &mdash; records what you found
+      on each, and exports it. That record is what a compliance status is supposed to rest on, and it
+      also happens to be the document a customer's procurement team will ask for.</p>
+      <p>It refuses to let you file a criterion as non-conforming with no explanation, which is the
+      same discipline the statement asks for.</p>
+      <a class="btn" href="../">Open the builder &mdash; free, MIT</a>
+      <p style="margin-top:16px;font-size:14px;color:var(--muted)">The official
+      <a href="https://www.w3.org/WAI/planning/statements/">W3C accessibility statement generator</a>
+      will format the document once you know what to put in it.</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>Written because the statement is usually treated as the deliverable, when it is really a
+    summary of work that either happened or did not.</p>
+    <p class="legal">Not legal advice. The binding requirements are in Directive (EU) 2016/2102, the
+    model in Commission Implementing Decision (EU) 2018/1523, and your member state's transposition
+    of both.</p>
+  </footer>
+</div>
+</body>
+</html>

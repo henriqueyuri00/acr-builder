@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A customer asked for your VPAT. Here is what they are actually asking for.</title>
+<meta name="description" content="What a VPAT and an Accessibility Conformance Report are, which edition you need, what the four conformance levels mean, and what a procurement reviewer actually reads. Plain English, no overlay pitch.">
+<link rel="canonical" href="https://henriqueyuri00.github.io/acr-builder/vpat/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://henriqueyuri00.github.io/acr-builder/vpat/">
+<meta property="og:title" content="A customer asked for your VPAT. Here is what they are actually asking for.">
+<meta property="og:description" content="VPAT vs ACR, which of the four editions applies to you, what Supports and Partially Supports actually mean, and the one column reviewers read first.">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "A customer asked for your VPAT. Here is what they are actually asking for.",
+  "url": "https://henriqueyuri00.github.io/acr-builder/vpat/",
+  "description": "What a VPAT and an Accessibility Conformance Report are, which edition applies, what the four conformance levels mean, and what a procurement reviewer reads first.",
+  "author": { "@type": "Person", "name": "Henrique Yuri" },
+  "about": ["Accessibility Conformance Report", "VPAT", "WCAG", "EN 301 549", "Section 508"]
+}
+</script>
+<style>
+  :root{
+    --bg:#fbfbfa; --panel:#fff; --ink:#16171a; --muted:#5f6470; --line:#e4e4e2;
+    --accent:#1c5d3f; --accent-soft:#e8f1ec; --on-accent:#fff;
+    --warn:#8a5a1b; --warn-soft:#fbf3e6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme=light]){
+      --bg:#131416; --panel:#1a1c1f; --ink:#e9e9ea; --muted:#9ba1ac; --line:#2c2f34;
+      --accent:#6cc49a; --accent-soft:#18342a; --on-accent:#10241b;
+      --warn:#e3b169; --warn-soft:#2e2415;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  a{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:60;background:var(--accent);color:var(--on-accent);
+        padding:10px 16px;border-radius:0 0 8px 8px;text-decoration:none}
+  .skip:focus{top:0}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:16px;
+       padding:18px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .top a{text-decoration:none}
+  header.hero{padding:48px 0 6px}
+  h1{font-size:clamp(26px,4.4vw,36px);line-height:1.22;margin:0 0 16px;letter-spacing:-.02em}
+  .lede{font-size:18px;color:var(--muted);margin:0}
+  h2{font-size:21px;margin:44px 0 10px;letter-spacing:-.01em}
+  h3{font-size:16.5px;margin:26px 0 6px}
+  p,li{max-width:68ch}
+  ul,ol{padding-left:22px}
+  li{margin:6px 0}
+  .tw{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:10px;margin:18px 0}
+  .tw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+  th,td{padding:10px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  thead th{background:var(--panel);font-size:12.5px;text-transform:uppercase;
+           letter-spacing:.05em;color:var(--muted)}
+  tbody th{font-weight:620;white-space:nowrap}
+  .callout{background:var(--accent-soft);border-radius:10px;padding:17px 19px;margin:22px 0}
+  .callout p{margin:0}
+  .callout p + p{margin-top:10px}
+  .warn{background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 10px 10px 0;
+        padding:15px 18px;margin:22px 0}
+  .warn p{margin:0}
+  .next{margin:34px 0;padding:20px 22px;border:1px solid var(--line);border-left:3px solid var(--accent);
+        border-radius:10px;background:var(--panel)}
+  .next h3{margin-top:0}
+  .btn{display:inline-block;background:var(--accent);color:var(--on-accent);text-decoration:none;
+       padding:11px 19px;border-radius:9px;font-weight:580;font-size:14.5px;margin-top:6px}
+  .btn:hover{filter:brightness(1.08)}
+  code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px}
+  footer{margin:54px 0 40px;padding-top:20px;border-top:1px solid var(--line);
+         color:var(--muted);font-size:13.5px}
+  .legal{font-size:12.5px;margin-top:14px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+  <nav class="top" aria-label="Site">
+    <a href="../"><strong>ACR Builder</strong></a>
+    <a href="../sprint/">The Conformance Sprint</a>
+  </nav>
+
+  <header class="hero">
+    <h1>A customer asked for your VPAT. Here is what they are actually asking for.</h1>
+    <p class="lede">Usually it arrives in a procurement questionnaire, with a deadline, from someone
+    who will not explain the acronym. This is the short version: what the document is, which one you
+    need, and what the person reading it is actually looking at.</p>
+  </header>
+
+  <main id="main">
+    <h2>VPAT and ACR are not the same thing</h2>
+    <p>A <strong>VPAT</strong> is the blank template. An <strong>Accessibility Conformance Report</strong>
+    is what you get once it is filled in. Your customer will use the words interchangeably; the
+    distinction matters only when you go looking for the file, because the template is free and
+    downloading it teaches you nothing about your own product.</p>
+    <p>The template is maintained by the Information Technology Industry Council. The current version
+    is <strong>VPAT 2.5</strong>, published in four editions:</p>
+
+    <div class="tw" tabindex="0" role="region" aria-label="VPAT editions">
+      <table>
+        <thead><tr><th scope="col">Edition</th><th scope="col">Covers</th><th scope="col">Ask for it when</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">WCAG</th><td>WCAG 2.0, 2.1 and 2.2</td>
+              <td>The buyer just wants to know your web product meets the guidelines.</td></tr>
+          <tr><th scope="row">508</th><td>Revised Section 508 (US)</td>
+              <td>Selling to a US federal agency, or to someone who sells to one.</td></tr>
+          <tr><th scope="row">EU</th><td>EN 301 549</td>
+              <td>Selling to European public sector procurement.</td></tr>
+          <tr><th scope="row">INT</th><td>All three at once</td>
+              <td>You do not know which the buyer wants, or you have several buyers.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>If nobody told you which edition, the honest move is to ask. If you cannot ask, the WCAG
+    edition covers the substance for a web product: EN 301 549 Chapter 9 adopts WCAG Level A and AA
+    directly, and Revised Section 508 does the same.</p>
+
+    <h2>The four conformance levels, and what they signal</h2>
+    <p>Every success criterion gets one of four answers. The words look bureaucratic and are not:
+    a reviewer reads the pattern of them as a claim about how seriously you tested.</p>
+
+    <div class="tw" tabindex="0" role="region" aria-label="Conformance levels">
+      <table>
+        <thead><tr><th scope="col">Level</th><th scope="col">What it means</th><th scope="col">How it reads</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Supports</th>
+              <td>The product meets the criterion with no known defects.</td>
+              <td>Fine, in moderation. Fifty of them in a row does not read as fine.</td></tr>
+          <tr><th scope="row">Partially Supports</th>
+              <td>Some functionality meets it, some does not.</td>
+              <td>The most credible answer in most reports. Requires a remark saying what fails.</td></tr>
+          <tr><th scope="row">Does Not Support</th>
+              <td>The majority of functionality does not meet it.</td>
+              <td>Not disqualifying on its own. Unexplained, it is.</td></tr>
+          <tr><th scope="row">Not Applicable</th>
+              <td>The criterion does not apply to the product.</td>
+              <td>Scrutinised hardest. See below.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Not Applicable is where reports get caught</h3>
+    <p>Some criteria genuinely do not apply — captions for prerecorded audio, if your product has no
+    audio. But a web product that marks <code>1.3.1 Info and Relationships</code>,
+    <code>2.1.1 Keyboard</code> or <code>4.1.2 Name, Role, Value</code> as Not Applicable is telling a
+    reviewer something it did not mean to. Those apply to essentially anything with a user interface.</p>
+
+    <div class="warn">
+      <p><strong>An all-Supports report is a negative signal.</strong> Experienced procurement
+      reviewers treat a clean sweep across every criterion as evidence that the testing did not
+      happen, not as evidence of an accessible product. An honest report with a dozen
+      <em>Partially Supports</em> rows and dated remediation notes wins more deals than a suspicious
+      wall of green.</p>
+    </div>
+
+    <h2>The column reviewers actually read</h2>
+    <p>Not the conformance level. The <strong>Remarks and Explanations</strong> column beside it.</p>
+    <p>The level is a single word and every vendor writes the same words. The remark is where a
+    reviewer finds out whether you know your own product. A useful remark names the defect, where it
+    occurs, and what happens next:</p>
+    <div class="callout">
+      <p><em>&ldquo;Partially Supports. Colour contrast on the secondary navigation is 3.9:1 against the
+      surface colour, below the 4.5:1 required. Present on all authenticated pages. Fix scheduled for
+      the March 2026 release; tracked as ACC-118.&rdquo;</em></p>
+      <p>That paragraph tells a reviewer more than forty rows of &ldquo;Supports&rdquo; do.</p>
+    </div>
+
+    <h2>Who actually has to do this</h2>
+    <ul>
+      <li><strong>Selling to US federal agencies</strong> — Revised Section 508 applies to the agency,
+      and the agency pushes the requirement to you through the contract.</li>
+      <li><strong>Selling to EU public sector</strong> — the Web Accessibility Directive binds the
+      body procuring you, and EN 301 549 is the standard they must satisfy.</li>
+      <li><strong>Selling consumer services in the EU</strong> — the European Accessibility Act has
+      applied since 28 June 2025. It exempts microenterprises providing services: fewer than 10 people
+      <em>and</em> turnover or balance sheet of no more than &euro;2 million. The exemption covers
+      services, not products.</li>
+      <li><strong>Everyone else</strong> — no law compels you, and your customer's procurement
+      questionnaire does anyway. That is contract law, and no regulatory exemption touches it.</li>
+    </ul>
+
+    <div class="callout">
+      <p>If you are a four-person company under &euro;2m selling a service, the EAA very likely does
+      not bind you. It does not follow that you can ignore the request: the buyer asking for your ACR
+      is managing their own obligation by pushing it down the supply chain.</p>
+    </div>
+
+    <h2>What it costs</h2>
+    <p>The standard is public. The template is free. And a completed report still costs real money,
+    because the expensive part was never the paperwork — it is establishing whether you actually
+    conform.</p>
+    <p>Automated tools do not close that gap and say so themselves: axe-core detects roughly
+    <a href="https://www.deque.com/blog/automated-testing-study-identifies-57-percent-of-digital-accessibility-issues/">57% of issues by volume</a>
+    and about a third of success criteria. The criteria that fail most often in real audits — info and
+    relationships, name/role/value, focus visibility, keyboard operation — are largely the ones a
+    scanner cannot judge.</p>
+
+    <div class="warn">
+      <p><strong>Accessibility overlays do not produce conformance.</strong> A widget that promises
+      instant compliance does not change what a reviewer finds, and their presence is an increasingly
+      common procurement disqualifier. There is no version of this that skips testing your product.</p>
+    </div>
+
+    <div class="next">
+      <h3>Writing the report</h3>
+      <p>The <strong>ACR Builder</strong> walks all the WCAG 2.1 and 2.2 Level A and AA success
+      criteria, records your judgement on each, and exports a clean report as HTML or Markdown. It
+      runs entirely in your browser &mdash; no account, no upload, works offline &mdash; and it refuses
+      to let you file a criterion as non-conforming with no explanation.</p>
+      <a class="btn" href="../">Open the builder &mdash; free, MIT</a>
+      <p style="margin-top:16px;font-size:14px;color:var(--muted)">If the harder question is whether
+      the judgement behind each row survives a reviewer pressing on it,
+      <a href="../sprint/">The Conformance Sprint</a> is a paid three-day testing protocol for that
+      part.</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>Written because the acronym arrives without an explanation attached, and most of what is
+    written about it is trying to sell an overlay.</p>
+    <p class="legal">VPAT&reg; is a registered service mark of the Information Technology Industry
+    Council (ITI). This page is not affiliated with or endorsed by ITI and does not reproduce their
+    template. Not legal advice.</p>
+  </footer>
+</div>
+</body>
+</html>
